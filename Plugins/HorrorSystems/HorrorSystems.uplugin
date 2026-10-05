@@ -1,0 +1,13 @@
+{
+  "FileVersion": 3,
+  "Version": 5,
+  "VersionName": "0.5.0",
+  "FriendlyName": "Reborn Horror Systems",
+  "Description": "Portable first-person horror systems with stage routes, safe rooms, countdown, clue gates and cinematic performances.",
+  "Category": "Gameplay",
+  "CreatedBy": "SunSeeker",
+  "CanContainContent": true,
+  "EnabledByDefault": false,
+  "Modules": [{ "Name": "HorrorSystems", "Type": "Runtime", "LoadingPhase": "Default" }],
+  "Plugins": [{ "Name": "ControlRig", "Enabled": true }]
+}
