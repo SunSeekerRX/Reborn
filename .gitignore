@@ -1,0 +1,15 @@
+Binaries/
+Intermediate/
+Saved/
+DerivedDataCache/
+.vs/
+*.sln
+Plugins/*/Binaries/
+Plugins/*/Intermediate/
+
+# Keep packaged runtime binaries, exclude debug symbols.
+!Deliverables/**/Binaries/
+!Deliverables/**/Binaries/**
+!Archive/**/Binaries/
+!Archive/**/Binaries/**
+*.pdb

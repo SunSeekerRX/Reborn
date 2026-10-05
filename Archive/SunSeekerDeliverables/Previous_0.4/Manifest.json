@@ -1,0 +1,17 @@
+{
+  "engine": "5.8.2",
+  "platform": "Win64",
+  "configuration": "Shipping",
+  "project": {
+    "file": "SunSeekerTest_Project.zip",
+    "files": 130,
+    "bytes": 54986647,
+    "sha256": "7739072d09c4fdd0d13f77feef8d27f25215f8ebfa03804973d4a598e6e1779d"
+  },
+  "game": {
+    "file": "SunSeekerTest_Windows.zip",
+    "files": 31,
+    "bytes": 270048465,
+    "sha256": "6831ace89a99aef4169af2918472220592278ebf6426c4fe4efc83af20556c14"
+  }
+}

@@ -1,0 +1,196 @@
+﻿{
+	"devices": [
+		{
+			"deviceName": "DESKTOP-3ORPM6E",
+			"instance": "878AB35B44E8582404A0268FD7A93040",
+			"instanceName": "DESKTOP-3ORPM6E-45572",
+			"platform": "WindowsEditor",
+			"oSVersion": "Windows 11 (24H2) [10.0.26100.6899] ",
+			"model": "Default",
+			"gPU": "NVIDIA GeForce RTX 5060 Ti",
+			"cPUModel": "Intel(R) Core(TM) i5-14600KF",
+			"rAMInGB": 32,
+			"renderMode": "D3D12_SM5",
+			"rHI": "D3D12 (SM5)",
+			"appInstanceLog": ""
+		}
+	],
+	"reportCreatedOn": "2026.10.04-18.39.35",
+	"succeeded": 7,
+	"succeededWithWarnings": 0,
+	"failed": 0,
+	"notRun": 0,
+	"inProcess": 0,
+	"totalDuration": 72.149200439453125,
+	"comparisonExported": false,
+	"comparisonExportDirectory": "",
+	"tests": [
+		{
+			"testDisplayName": "CapacitySwapAndSession",
+			"fullTestPath": "HorrorSystems.Inventory.CapacitySwapAndSession",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"878AB35B44E8582404A0268FD7A93040"
+			],
+			"duration": 0.0020742006599903107,
+			"dateTime": "2026.10.04-18.38.23",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "IntegrationAvailable",
+			"fullTestPath": "HorrorSystems.Progression.IntegrationAvailable",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"878AB35B44E8582404A0268FD7A93040"
+			],
+			"duration": 0.0038621015846729279,
+			"dateTime": "2026.10.04-18.38.23",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "RoomFlow",
+			"fullTestPath": "HorrorSystems.Progression.RoomFlow",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"878AB35B44E8582404A0268FD7A93040"
+			],
+			"duration": 38.559486389160156,
+			"dateTime": "2026.10.04-18.38.23",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "TimerRollbackAndStages",
+			"fullTestPath": "HorrorSystems.Progression.TimerRollbackAndStages",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"878AB35B44E8582404A0268FD7A93040"
+			],
+			"duration": 0.0013683997094631195,
+			"dateTime": "2026.10.04-18.39.01",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "EndToEnd",
+			"fullTestPath": "HorrorSystems.Runtime.EndToEnd",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"878AB35B44E8582404A0268FD7A93040"
+			],
+			"duration": 18.39213752746582,
+			"dateTime": "2026.10.04-18.39.01",
+			"entries": [
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Chase start: monster=X=1400.000 Y=1000.000 Z=110.000 player=X=-1700.000 Y=0.000 Z=100.000 nav=1/1 path=1 points=7",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.04-18.39.09"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Chase result: monster=X=151.421 Y=118.724 Z=89.150 distance=1855.22 initial=3257.30 state=0 gameTime=3.00 velocity=X=-538.893 Y=-34.557 Z=0.000",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.04-18.39.12"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Validated movement, Ctrl modes, mannequin, NavMesh pursuit, depth fade, pickup, paused inspection and A/B/C round-trip persistence.",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.04-18.39.20"
+				}
+			],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "MovementEdges",
+			"fullTestPath": "HorrorSystems.Runtime.MovementEdges",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"878AB35B44E8582404A0268FD7A93040"
+			],
+			"duration": 8.7706117630004883,
+			"dateTime": "2026.10.04-18.39.20",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "RigAndCamera",
+			"fullTestPath": "HorrorSystems.Runtime.RigAndCamera",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"878AB35B44E8582404A0268FD7A93040"
+			],
+			"duration": 6.4196510314941406,
+			"dateTime": "2026.10.04-18.39.28",
+			"entries": [
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Standing pelvis 90.02 feet 4.70 / 4.36",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.04-18.39.33"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Crouched pelvis 51.01 feet 3.56 / 3.23",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.04-18.39.34"
+				}
+			],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		}
+	]
+}
