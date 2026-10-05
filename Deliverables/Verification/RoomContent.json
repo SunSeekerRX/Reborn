@@ -1,0 +1,23 @@
+[
+  {
+    "map": "/HorrorSystems/Maps/Test_A",
+    "room": "RoomA",
+    "stages": 3,
+    "seconds": 60,
+    "actors": 40
+  },
+  {
+    "map": "/HorrorSystems/Maps/Test_B",
+    "room": "RoomB",
+    "stages": 3,
+    "seconds": 60,
+    "actors": 39
+  },
+  {
+    "map": "/HorrorSystems/Maps/Test_C",
+    "room": "RoomC",
+    "stages": 3,
+    "seconds": 60,
+    "actors": 39
+  }
+]

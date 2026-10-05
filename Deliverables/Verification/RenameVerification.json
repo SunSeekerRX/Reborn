@@ -1,0 +1,11 @@
+{
+  "project": "Reborn",
+  "project_file": "Reborn.uproject",
+  "module": "Reborn",
+  "targets": [
+    "Reborn",
+    "RebornEditor"
+  ],
+  "tests_passed": 7,
+  "old_name_redirects": true
+}
