@@ -7,6 +7,7 @@
 #include "EngineUtils.h"
 #include "NavigationSystem.h"
 AHSGameMode::AHSGameMode() { DefaultPawnClass=AHSCharacter::StaticClass(); PlayerControllerClass=AHSPlayerController::StaticClass(); }
+AHSTitleGameMode::AHSTitleGameMode() {DefaultPawnClass=nullptr;PlayerControllerClass=AHSPlayerController::StaticClass();}
 AActor* AHSGameMode::ChoosePlayerStart_Implementation(AController* Player)
 {
     auto* S=GetGameInstance()->GetSubsystem<UHSWorldState>();

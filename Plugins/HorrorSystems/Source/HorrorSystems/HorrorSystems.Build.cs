@@ -9,6 +9,6 @@ public class HorrorSystems : ModuleRules
             "NavigationSystem", "GameplayTasks", "AnimGraphRuntime"
         });
         if(Target.bBuildEditor) PrivateDependencyModuleNames.Add("AssetRegistry");
-        PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore", "ApplicationCore", "AnimationCore" });
+        PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore", "ApplicationCore", "AnimationCore", "MoviePlayer" });
     }
 }

@@ -11,3 +11,11 @@ public:
     virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
     virtual void StartPlay() override;
 };
+
+UCLASS()
+class HORRORSYSTEMS_API AHSTitleGameMode : public AGameModeBase
+{
+    GENERATED_BODY()
+public:
+    AHSTitleGameMode();
+};

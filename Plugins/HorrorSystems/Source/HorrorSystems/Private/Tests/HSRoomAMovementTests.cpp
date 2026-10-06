@@ -72,9 +72,10 @@ public:
             for(TActorIterator<AHSPortal> It(W);It;++It)
             {
                 Room->Progress()->CollectClue(TEXT("Key_1"));
-                Test->TestFalse(TEXT("RoomA preview disables inter-room travel"),It->bTravelEnabled);
-                Test->TestTrue(TEXT("Preview exit stays locked even with the clue"),It->IsLocked());
-                Test->TestFalse(TEXT("Travel cannot load unfinished RoomB"),It->Travel(P));
+                if(It->bWhiteLightTravel) Test->TestTrue(TEXT("Safe-return gate requires return before travel"),It->bTravelEnabled && It->bRequiresSafeReturn);
+                else Test->TestFalse(TEXT("Old hallway exit cannot bypass safe-return gate"),It->bTravelEnabled);
+                Test->TestTrue(TEXT("Exit stays locked while still outside safety"),It->IsLocked());
+                Test->TestFalse(TEXT("Cannot travel before returning to safety"),It->Travel(P));
             }
             if(!FParse::Param(FCommandLine::Get(),TEXT("nosound")))
             {

@@ -32,6 +32,7 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Interaction") TObjectPtr<AHSPickup> FocusedPickup;
     UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Interaction") TObjectPtr<AActor> FocusedInteraction;
     UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Interaction") TWeakObjectPtr<class AHSSwapPainting> SelectedPainting;
+    bool GetInteractionPromptLocation(FVector& Position) const;
     void RefreshInteractionFocus() { RefreshFocus(); }
     void SelectPainting(class AHSSwapPainting* Painting);
     class UMeshComponent* GetHighlightedMesh() const { return HighlightedMesh.Get(); }

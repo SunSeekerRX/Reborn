@@ -41,15 +41,15 @@ AHSCharacter::AHSCharacter()
     Camera->FieldOfView=85.f;
     Flashlight=CreateDefaultSubobject<USpotLightComponent>(TEXT("Flashlight"));
     Flashlight->SetupAttachment(Camera);
-    Flashlight->Intensity=1200.f;
+    Flashlight->Intensity=180.f;
     Flashlight->InnerConeAngle=24.f; Flashlight->OuterConeAngle=48.f;
     Flashlight->SetLightColor(FLinearColor(.85f,.9f,1.f));
     PlayerAuraLight=CreateDefaultSubobject<UPointLightComponent>(TEXT("PlayerAuraLight"));
     PlayerAuraLight->SetupAttachment(Camera);
     PlayerAuraLight->SetMobility(EComponentMobility::Movable);
     PlayerAuraLight->SetIntensityUnits(ELightUnits::Lumens);
-    PlayerAuraLight->Intensity=900.f;
-    PlayerAuraLight->AttenuationRadius=450.f;
+    PlayerAuraLight->Intensity=180.f;
+    PlayerAuraLight->AttenuationRadius=330.f;
     PlayerAuraLight->SourceRadius=12.f;
     PlayerAuraLight->SetLightColor(FLinearColor(.88f,.94f,1.f));
     PlayerAuraLight->CastShadows=true;
@@ -65,15 +65,14 @@ bool AHSCharacter::ReceiveMonsterContact(AHSMonster* Monster)
     auto* State=GetGameInstance()->GetSubsystem<UHSWorldState>();
     auto* Progress=GetGameInstance()->GetSubsystem<UHSProgression>();
     auto* Room=AHSRoomDirector::Find(GetWorld());
-    if(!Monster || !Monster->bCanDamagePlayer || Monster->bCinematicActor || HitProtectionRemaining>0.f || !PC || PC->IsGameplayLocked() || PC->IsInspecting() || Progress->bCinematic || Progress->bCompleted || (Room && Room->IsSafe(this)) || !State->LoseLife()) return false;
+    if(!Monster || !Monster->bCanDamagePlayer || Monster->bCinematicActor || HitProtectionRemaining>0.f || !PC || PC->IsGameplayLocked() || PC->IsInspecting() || Progress->bCinematic || Progress->bCompleted || (Room && State->IsInSafety(this)) || !State->LoseLife()) return false;
     HitProtectionRemaining=FMath::Max(5.25f,Monster->StaggerDuration+.25f);
     FVector Away=(GetActorLocation()-Monster->GetActorLocation()).GetSafeNormal2D();
     if(Away.IsNearlyZero()) Away=GetActorForwardVector();
     LaunchCharacter(Away*180.f+FVector(0,0,30),true,true);
     if(State->IsDefeated())
     {
-        CancelAutoInspection(); PC->CloseInspection(); PC->SetGameplayLocked(true);
-        PC->bShowMouseCursor=true; PC->SetInputMode(FInputModeGameAndUI());
+          State->RecoverAtSafety();
     }
     return true;
 }
@@ -90,6 +89,7 @@ void AHSCharacter::BeginPlay()
     PaintingHighlight=LoadObject<UMaterialInterface>(nullptr,TEXT("/HorrorSystems/Materials/M_HighlightPainting.M_HighlightPainting"));
     const auto* Settings=GetDefault<UHSSettings>();
     Flashlight->AttenuationRadius=Settings->FlashlightRange;
+    Flashlight->SetIntensity(Settings->FlashlightIntensity);
     PlayerAuraLight->SetAttenuationRadius(FMath::Clamp(Settings->PlayerLightRadius,100.f,FMath::Max(100.f,Settings->ClearRadius)));
     PlayerAuraLight->SetIntensity(FMath::Max(1.f,Settings->PlayerLightIntensity));
     PlayerAuraLight->SetVisibility(true);
@@ -208,13 +208,16 @@ void AHSCharacter::RefreshFocus()
     FocusedPickup=nullptr;
     FocusedInteraction=nullptr;
     auto* PC=Cast<AHSPlayerController>(Controller);
-    if(!PC || PC->IsMouseMode() || PC->IsGameplayLocked()) { ApplyInteractionHighlight(nullptr); return; }
+    if(!PC || PC->IsMouseMode() || PC->IsGameplayLocked() || PC->IsInspecting()) { ApplyInteractionHighlight(nullptr); return; }
     FVector Start; FRotator Rot; PC->GetPlayerViewPoint(Start,Rot);
-    // Sweep from the camera so pickup prompts obey walls; reach still measured from the player.
+    // Trace the precise view ray first: a wide sweep can hit a tabletop before a small key resting on it.
     FHitResult Hit;
     FCollisionQueryParams Params(SCENE_QUERY_STAT(HSPickupFocus),false,this);
     const float TraceDistance=GetDefault<UHSSettings>()->PickupDistance+80.f;
-    if(GetWorld()->SweepSingleByChannel(Hit,Start,Start+Rot.Vector()*TraceDistance,FQuat::Identity,ECC_Visibility,FCollisionShape::MakeSphere(18),Params))
+    const FVector End=Start+Rot.Vector()*TraceDistance;
+    bool bHit=GetWorld()->LineTraceSingleByChannel(Hit,Start,End,ECC_Visibility,Params);
+    if(!bHit) bHit=GetWorld()->SweepSingleByChannel(Hit,Start,End,FQuat::Identity,ECC_Visibility,FCollisionShape::MakeSphere(18),Params);
+    if(bHit)
     {
         auto* Candidate=Hit.GetActor();
         if(Candidate && FVector::Dist(GetActorLocation(),Candidate->GetActorLocation())<=GetDefault<UHSSettings>()->PickupDistance && (Candidate->IsA<AHSPickup>() || Candidate->IsA<AHSSwapPainting>() || Candidate->IsA<AHSInspectTrigger>() || Candidate->IsA<AHSMovableProp>()))
@@ -247,7 +250,8 @@ void AHSCharacter::StartPickupAnimation(UHSItemData* Item,const FVector& Target)
 {
     PickupTargetLocation=Target; PickupAnimationDuration=PickupMontage?FMath::Max(.1f,PickupMontage->GetPlayLength()):.7f; PickupTimeLeft=PickupAnimationDuration;
     if(PickupMontage) PlayAnimMontage(PickupMontage);
-    PendingInspection=Item && Item->bInspectOnPickup?Item:nullptr;
+    // E stores the item; inventory inspection is explicitly requested afterwards.
+    PendingInspection=nullptr;
 }
 void AHSCharacter::Interact()
 {
@@ -270,3 +274,16 @@ void AHSCharacter::Interact()
         // TryPickup invokes StartPickupAnimation before the actor is destroyed.
     }
 }
+
+bool AHSCharacter::GetInteractionPromptLocation(FVector& Position) const
+{
+    const auto* PC=Cast<AHSPlayerController>(GetController());
+    const auto* Target=FocusedInteraction.Get();
+    if(!PC || PC->IsGameplayLocked() || PC->IsInspecting() || PC->IsMouseMode() || !IsValid(Target) || Target->IsHidden() || !Target->GetActorEnableCollision()) return false;
+    if(FVector::Dist(GetActorLocation(),Target->GetActorLocation())>GetDefault<UHSSettings>()->PickupDistance) return false;
+    if(const auto* Painting=Cast<AHSSwapPainting>(Target);Painting && Painting->bSwapping) return false;
+    const auto* PromptMesh=Target->FindComponentByClass<UMeshComponent>();
+    if(!PromptMesh || !PromptMesh->IsVisible()) return false;
+    Position=PromptMesh->Bounds.Origin+FVector(0,0,PromptMesh->Bounds.BoxExtent.Z+12.f);return true;
+}
+

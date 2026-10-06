@@ -31,6 +31,8 @@ AHSRoomDirector::AHSRoomDirector()
     ReturnBarrier->SetCollisionResponseToChannel(ECC_Pawn,ECR_Block); ReturnBarrier->SetCanEverAffectNavigation(false);
 }
 UHSProgression* AHSRoomDirector::Progress() const { return GetGameInstance()->GetSubsystem<UHSProgression>(); }
+const FHSRoomRoute* AHSRoomDirector::TravelRoute() const
+{ return bSafeTravelReady?&ReadyTravelRoute:Rules?Rules->RouteFor(Progress()->Stage):nullptr; }
 AHSRoomDirector* AHSRoomDirector::Find(UWorld* W)
 {
     if(!W) return nullptr;
@@ -47,7 +49,7 @@ AHSRoomDirector* AHSRoomDirector::Find(UWorld* W)
     return Nearest;
 }
 void AHSRoomDirector::PrepareEntry()
-{ bInitialized=false; bSafeAreaSealed=false; bResetting=false; ReturnBarrier->SetCollisionEnabled(ECollisionEnabled::NoCollision); }
+{ bInitialized=false; bSafeAreaSealed=false; bResetting=false;bHasLeftSafeArea=false;bObjectiveAcquired=false;bSafeTravelReady=false; ReturnBarrier->SetCollisionEnabled(ECollisionEnabled::NoCollision); }
 bool AHSRoomDirector::IsSafe(const AHSCharacter* C) const
 { return C && SafeArea->Bounds.GetBox().IsInsideOrOn(C->GetActorLocation()); }
 void AHSRoomDirector::Tick(float Dt)
@@ -60,7 +62,11 @@ void AHSRoomDirector::Tick(float Dt)
     auto* P=Progress(); if(!Rules || !PC || !Player || !P) return;
     if(!bInitialized || P->ActiveRoom!=Rules->RoomId)
     {
-        bInitialized=true; P->EnterRoom(Rules->RoomId,Rules->Duration);
+        bInitialized=true;if(P->Stage<MinimumStage) P->SetStage(MinimumStage);P->EnterRoom(Rules->RoomId,Rules->Duration);
+        auto* Session=GetGameInstance()->GetSubsystem<UHSWorldState>();
+        for(TActorIterator<APlayerStart> It(GetWorld());It;++It) if(It->PlayerStartTag==SafeSpawnTag) {Session->RecoveryTransform=It->GetActorTransform();Session->RecoveryTransform.AddToTranslation(It->GetActorForwardVector()*140.f);Session->bHasRecovery=true;break;}
+        Session->bRecoverySafety=false;
+        SafeRecoveryTransform=Session->RecoveryTransform;
         ReturnBarrier->SetBoxExtent(SafeArea->GetUnscaledBoxExtent());
         if(bPlayFirstEntrySequence && WindowSequence && !P->SeenWindows.Contains(Rules->RoomId))
         { P->SeenWindows.Add(Rules->RoomId); WindowSequence->Play(); }
@@ -68,14 +74,49 @@ void AHSRoomDirector::Tick(float Dt)
     if(P->bCompleted)
     {
         if(EndingTime<=0) BeginEnding();
-        EndingTime+=Dt; return;
+        EndingTime+=Dt;
+        if(EndingTime>.15f) GetGameInstance()->GetSubsystem<UHSWorldState>()->BeginMenuTravel(false);
+        return;
     }
     if(bResetting || P->bCinematic) return;
+    auto* Session=GetGameInstance()->GetSubsystem<UHSWorldState>();
+    if(Session->bRecoverySafety)
+    {
+        if(Session->IsInSafety(Player)) return;
+        Session->bRecoverySafety=false;P->BeginCountdown();
+    }
     // Wait until the capsule clears the safe area before turning on its solid volume.
     const FBox SafeBox=SafeArea->Bounds.GetBox();
     const float Radius=Player->GetCapsuleComponent()->GetScaledCapsuleRadius();
-    if(!bSafeAreaSealed && FVector::DistSquared(Player->GetActorLocation(),SafeBox.GetClosestPointTo(Player->GetActorLocation()))>FMath::Square(Radius+2.f))
-    { bSafeAreaSealed=true; ReturnBarrier->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics); P->BeginCountdown(); }
+    if(!bHasLeftSafeArea && FVector::DistSquared(Player->GetActorLocation(),SafeBox.GetClosestPointTo(Player->GetActorLocation()))>FMath::Square(Radius+2.f))
+    { bHasLeftSafeArea=true;bSafeAreaSealed=true; ReturnBarrier->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics); P->BeginCountdown(); }
+    if(bFinalEscapeMode && P->HasClue(TEXT("Key_3")))
+    {
+        bSafeAreaSealed=false;ReturnBarrier->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+        if(IsSafe(Player)) {P->bTimerRunning=false;Session->bRecoverySafety=true;Session->RecoveryTransform=SafeRecoveryTransform;}
+    }
+    if(bReturnToSafeAfterObjective && bHasLeftSafeArea && !bSafeTravelReady)
+    {
+        const auto* Route=Rules->RouteFor(P->Stage);
+        bool Complete=Route && !Route->RequiredClues.IsEmpty();
+        if(Route) for(FName Clue:Route->RequiredClues) Complete&=P->HasClue(Clue);
+        if(Complete)
+        {
+            bObjectiveAcquired=true;bSafeAreaSealed=false;
+            ReturnBarrier->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+            if(IsSafe(Player))
+            {
+                ReadyTravelRoute=*Route;bSafeTravelReady=true;P->bTimerRunning=false;
+                if(Route->bAdvanceOnSafeReturn)
+                {
+                    P->SetStage(P->Stage+1);
+                    // This completed room authorizes its departure even after the stage changes.
+                    ReadyTravelRoute.Stage=P->Stage;ReadyTravelRoute.RequiredClues.Reset();
+                    ReadyTravelRoute.bAdvanceStage=false;
+                }
+            }
+        }
+    }
     if(P->AdvanceClock(Dt)) HandleTimeout();
 }
 void AHSRoomDirector::FinishIntro() { if(WindowSequence) WindowSequence->Finish(); }
