@@ -13,6 +13,9 @@ class HORRORSYSTEMS_API UHSWorldState : public UGameInstanceSubsystem
     GENERATED_BODY()
 public:
     UHSWorldState();
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Health") int32 Lives=3;
+    UFUNCTION(BlueprintCallable, Category="Health") bool LoseLife();
+    UFUNCTION(BlueprintPure, Category="Health") bool IsDefeated() const { return Lives<=0; }
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Hotbar") TArray<FHSItemSlot> Slots;
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Hotbar") int32 SelectedSlot = 0;
     UPROPERTY(BlueprintAssignable, Category="Hotbar") FHSHotbarChanged OnHotbarChanged;

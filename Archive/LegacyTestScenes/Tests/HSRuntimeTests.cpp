@@ -7,6 +7,7 @@
 #include "HSSettings.h"
 #include "HSRoomActors.h"
 #include "HSProgression.h"
+#include "HSInspectionView.h"
 #include "Engine/Engine.h"
 #include "EngineUtils.h"
 #include "Kismet/GameplayStatics.h"
@@ -82,6 +83,44 @@ namespace
         {
             if(FParse::Param(FCommandLine::Get(),TEXT("HSVisualTest")))
                 FScreenshotRequest::RequestScreenshot(FPaths::Combine(FPaths::ProjectSavedDir(),TEXT("Verification"),Name),true,false);
+        }
+        bool ManipulateInspectionThroughSlate(UWorld* W)
+        {
+            auto Window=W->GetGameViewport()->GetWindow();
+            TSharedPtr<SHSInspectionView> View;
+            TFunction<void(TSharedRef<SWidget>)> Visit=[&](TSharedRef<SWidget> Widget) {
+                if(Widget->GetTypeAsString()==TEXT("SHSInspectionView")) View=StaticCastSharedRef<SHSInspectionView>(Widget);
+                auto* Children=Widget->GetChildren();
+                for(int32 I=0;I<Children->Num();++I) Visit(Children->GetChildAt(I));
+            };
+            if(!Window.IsValid()) return false;
+            Visit(Window.ToSharedRef()); if(!View.IsValid()) return false;
+            TArray<FFloat16Color> Pixels;
+            auto* Target=View->GetRenderTarget();
+            if(Target && Target->GameThread_GetRenderTargetResource()->ReadFloat16Pixels(Pixels) && Pixels.Num()==Target->SizeX*Target->SizeY)
+            {
+                Test->TestTrue(TEXT("Preview background has inverse alpha one (transparent)"),Pixels[0].A.GetFloat()>.99f);
+                Test->TestTrue(TEXT("Preview object has inverse alpha zero (opaque)"),Pixels[(Target->SizeY/2)*Target->SizeX+Target->SizeX/2].A.GetFloat()<.05f);
+                const auto& CenterPixel=Pixels[(Target->SizeY/2)*Target->SizeX+Target->SizeX/2];
+                Test->AddInfo(FString::Printf(TEXT("Preview HDR center: R=%.6f G=%.6f B=%.6f A=%.6f"),CenterPixel.R.GetFloat(),CenterPixel.G.GetFloat(),CenterPixel.B.GetFloat(),CenterPixel.A.GetFloat()));
+            }
+            else Test->AddError(TEXT("Could not read inspection transparency pixels"));
+            auto& Slate=FSlateApplication::Get();
+            const auto& G=View->GetCachedGeometry();
+            const FVector2D From=G.LocalToAbsolute(G.GetLocalSize()*.5f),To=From+FVector2D(100,45);
+            const FQuat Before=View->GetModelRotation();
+            TSet<FKey> None,Pressed; Pressed.Add(EKeys::LeftMouseButton);
+            Slate.SetCursorPos(From);
+            Slate.ProcessMouseMoveEvent(FPointerEvent(0,From,From,None,EKeys::Invalid,0,FModifierKeysState()),false);
+            Slate.ProcessMouseButtonDownEvent(Window->GetNativeWindow(),FPointerEvent(0,From,From,Pressed,EKeys::LeftMouseButton,0,FModifierKeysState()));
+            Slate.SetCursorPos(To);
+            Slate.ProcessMouseMoveEvent(FPointerEvent(0,To,From,Pressed,EKeys::Invalid,0,FModifierKeysState()),false);
+            Slate.ProcessMouseButtonUpEvent(FPointerEvent(0,To,To,None,EKeys::LeftMouseButton,0,FModifierKeysState()));
+            const float BeforeZoom=View->GetZoom();
+            Slate.ProcessMouseWheelOrGestureEvent(FPointerEvent(0,To,To,None,EKeys::Invalid,2.f,FModifierKeysState()),nullptr);
+            Test->TestTrue(TEXT("Actual Slate mouse drag rotates inspection mesh"),!View->GetModelRotation().Equals(Before));
+            Test->TestTrue(TEXT("Actual Slate mouse wheel zooms inspection mesh"),View->GetZoom()>BeforeZoom);
+            return true;
         }
         void Key(AHSPlayerController* PC,FKey K,EInputEvent E) { PC->InputKey(FInputKeyEventArgs::CreateSimulated(K,E,E==IE_Pressed?1.f:0.f)); }
         void Next(float Wait=0) { ++Stage; Until=FPlatformTime::Seconds()+Wait; }
@@ -187,12 +226,27 @@ namespace
                 FrozenWorldTime=W->GetTimeSeconds();
                 Screenshot(TEXT("Inspection.png"));
                 for(TActorIterator<AHSMonster> It(W);It;++It) { Monster=*It; MonsterLocation=It->GetActorLocation(); break; }
-                Stage=9; Until=Now+.35;
+                Stage=9; Until=Now+(FParse::Param(FCommandLine::Get(),TEXT("HSVisualTest"))?2.f:.35f);
             }
             else if(Stage==9)
             {
                 Test->TestEqual(TEXT("Inspection freezes world time"),W->GetTimeSeconds(),FrozenWorldTime);
                 if(Monster.IsValid()) Test->TestTrue(TEXT("Inspection freezes monster"),Monster->GetActorLocation().Equals(MonsterLocation,.01f));
+                if(FParse::Param(FCommandLine::Get(),TEXT("HSVisualTest")))
+                {
+                    Screenshot(TEXT("InspectionReady.png"));
+                    Stage=88; Until=Now+.15; return false;
+                }
+                Stage=89; Until=Now; return false;
+            }
+            else if(Stage==88)
+            {
+                Test->TestTrue(TEXT("Inspection widget receives pointer input"),ManipulateInspectionThroughSlate(W));
+                Screenshot(TEXT("InspectionRotated.png")); Stage=89; Until=Now+.35;
+            }
+            else if(Stage==89)
+            {
+                Test->TestEqual(TEXT("Rotating model keeps game time paused"),W->GetTimeSeconds(),FrozenWorldTime);
                 PC->CloseInspection();
                 Test->TestFalse(TEXT("Inspection unpauses world"),UGameplayStatics::IsGamePaused(W));
                 Test->TestTrue(TEXT("Returns to previous mouse mode"),PC->IsMouseMode());

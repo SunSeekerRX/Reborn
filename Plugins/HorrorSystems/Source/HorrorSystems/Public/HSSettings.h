@@ -9,6 +9,17 @@ class HORRORSYSTEMS_API UHSSettings : public UDeveloperSettings
     GENERATED_BODY()
 public:
     UHSSettings() { CategoryName=TEXT("Game"); }
+    UPROPERTY(Config,EditAnywhere,Category="Audio") TSoftObjectPtr<class USoundBase> WalkFootstepSound;
+    UPROPERTY(Config,EditAnywhere,Category="Audio") TSoftObjectPtr<class USoundBase> RunFootstepSound;
+    UPROPERTY(Config,EditAnywhere,Category="Audio") TSoftObjectPtr<class USoundBase> LandingSound;
+    UPROPERTY(Config,EditAnywhere,Category="Audio") TSoftObjectPtr<class USoundBase> CollapseSound;
+    UPROPERTY(Config,EditAnywhere,Category="Audio") TSoftObjectPtr<class USoundBase> PaintingSwapSound;
+    UPROPERTY(Config,EditAnywhere,Category="Audio") TSoftObjectPtr<class USoundBase> MonsterFootstepSound;
+    UPROPERTY(Config,EditAnywhere,Category="Audio") TSoftObjectPtr<class USoundBase> AmbientBackgroundSound;
+    UPROPERTY(Config,EditAnywhere,Category="Audio") TSoftObjectPtr<class USoundBase> Stage2Music;
+    UPROPERTY(Config,EditAnywhere,Category="Audio") TSoftObjectPtr<class USoundBase> PlayerPressureSound;
+    UPROPERTY(Config,EditAnywhere,Category="Audio") TSoftObjectPtr<class USoundBase> MonsterEntranceSound;
+    UPROPERTY(Config,EditAnywhere,Category="Art") TSoftObjectPtr<class USkeletalMesh> MonsterAppearance;
     UPROPERTY(Config, EditAnywhere, Category="Movement", meta=(ClampMin="1")) float WalkSpeed=420.f;
     UPROPERTY(Config, EditAnywhere, Category="Movement", meta=(ClampMin="1")) float SprintSpeed=650.f;
     UPROPERTY(Config, EditAnywhere, Category="Movement", meta=(ClampMin="1")) float SlowSpeed=150.f;

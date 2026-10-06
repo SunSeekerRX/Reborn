@@ -16,6 +16,10 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Item", meta=(MultiLine=true)) FText Description;
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Item") TObjectPtr<UTexture2D> Icon;
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Item") TObjectPtr<UTexture2D> InspectionImage;
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Inspection 3D") TObjectPtr<class UStaticMesh> InspectionMesh;
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Inspection 3D") TArray<TObjectPtr<class UMaterialInterface>> InspectionMaterials;
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Inspection 3D") FVector InspectionScale=FVector::OneVector;
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Inspection 3D") FRotator InspectionRotation=FRotator(0,0,0);
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Item") bool bInspectOnPickup = false;
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Audio") TObjectPtr<USoundBase> PickupSound;
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Audio") TObjectPtr<USoundBase> InspectSound;

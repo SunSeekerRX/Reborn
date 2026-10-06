@@ -1,0 +1,16 @@
+[
+  {
+    "source": "ArtSource\\Audio\\成品集\\基础音效\\脚步.wav",
+    "derived": "ArtSource\\Audio\\Derived\\S_PlayerStepSingle.wav",
+    "source_seconds": 5.115,
+    "start": 0.355,
+    "seconds": 0.4
+  },
+  {
+    "source": "ArtSource\\Audio\\成品集\\基础音效\\怪脚 .wav",
+    "derived": "ArtSource\\Audio\\Derived\\S_MonsterStepSingle.wav",
+    "source_seconds": 8.81,
+    "start": 0.12498866213151927,
+    "seconds": 0.55
+  }
+]

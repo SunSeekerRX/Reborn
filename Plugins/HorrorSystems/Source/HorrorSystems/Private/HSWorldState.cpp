@@ -4,6 +4,11 @@
 #include "Engine/GameInstance.h"
 
 UHSWorldState::UHSWorldState() { Slots.SetNum(HSPolicy::Capacity); }
+bool UHSWorldState::LoseLife()
+{
+    if(Lives<=0) return false;
+    Lives=FMath::Clamp(Lives-1,0,3); return true;
+}
 bool UHSWorldState::TryAddItem(UHSItemData* Item, const FString& WorldKey)
 {
     if (!Item || (!WorldKey.IsEmpty() && CollectedPickups.Contains(WorldKey))) return false;
@@ -42,6 +47,7 @@ UHSItemData* UHSWorldState::GetSelectedItem() const
 { return Slots.IsValidIndex(SelectedSlot) ? Slots[SelectedSlot].Item.Get() : nullptr; }
 void UHSWorldState::ResetSession()
 {
+    Lives=3;
     Slots.Empty(); Slots.SetNum(HSPolicy::Capacity); SelectedSlot=0;
     CollectedPickups.Empty(); PendingSpawnTag=NAME_None; bTravelPending=false;
     if(GetGameInstance()) if(auto* Progress=GetGameInstance()->GetSubsystem<UHSProgression>()) Progress->ResetProgression();

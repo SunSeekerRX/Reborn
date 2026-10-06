@@ -18,9 +18,20 @@ class HORRORSYSTEMS_API AHSMonster : public ACharacter
 {
     GENERATED_BODY()
 public:
+    UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Pursuit") FName HomeRoom;
     AHSMonster();
     virtual void BeginPlay() override;
     virtual void Tick(float Dt) override;
+    UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Combat") bool bCanDamagePlayer=false;
+    UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Combat",meta=(ClampMin="0.1")) float StaggerDuration=5.f;
+    UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Combat",meta=(ClampMin="0")) float StaggerSpeed=30.f;
+    UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Combat") float StaggerRemaining=0.f;
+    float RecoilRemaining=0.f;
+    bool TryContactPlayer(AHSCharacter* Player);
+private:
+    bool bContactArmed=true;
+    UFUNCTION() void OnCapsuleHit(UPrimitiveComponent* Component,AActor* Other,UPrimitiveComponent* OtherComponent,FVector Impulse,const FHitResult& Hit);
+public:
     UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Pursuit") bool bCinematicActor=false;
     UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Pursuit") bool bAutomaticSpeed=true;
     UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Pursuit") EHSMovementState MovementState=EHSMovementState::Normal;

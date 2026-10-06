@@ -40,9 +40,12 @@ class HORRORSYSTEMS_API AHSPortal : public AActor
     GENERATED_BODY()
 public:
     AHSPortal();
+    UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Portal") bool bTravelEnabled=true;
     virtual void BeginPlay() override;
     virtual void Tick(float Dt) override;
     UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Progression") bool bUseStageRoute=false;
+    UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Portal") bool bLocalTravel=false;
+    UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Portal") FName LocalTargetRoom;
     UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Progression") TObjectPtr<class UHSRoomRules> RoomRules;
     bool IsLocked() const;
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Portal") TObjectPtr<UBoxComponent> Trigger;
@@ -56,6 +59,7 @@ public:
 protected:
     UFUNCTION() void OnOverlap(UPrimitiveComponent* Component, AActor* Other, UPrimitiveComponent* OtherComp, int32 BodyIndex, bool bFromSweep, const FHitResult& Hit);
     bool bUsed=false;
+    float LocalCooldownUntil=0.f;
 };
 
 UCLASS(Blueprintable)

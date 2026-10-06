@@ -6,6 +6,7 @@
 class UHSItemData;
 class UHSWorldState;
 class SHSOverlay;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHSInspectionClosed,UHSItemData*,Item);
 UCLASS()
 class HORRORSYSTEMS_API AHSPlayerController : public APlayerController
 {
@@ -27,6 +28,7 @@ public:
     bool IsInspecting() const { return bInspecting; }
     UHSItemData* GetInspectionItem() const { return InspectionItem; }
     void Escape();
+    UPROPERTY(BlueprintAssignable,Category="UI") FHSInspectionClosed OnInspectionClosed;
     UFUNCTION(BlueprintCallable,Category="Progression") void SetGameplayLocked(bool Locked);
     bool IsGameplayLocked() const { return bGameplayLocked; }
 protected:
@@ -35,6 +37,7 @@ protected:
     bool bHotbarMouse=false;
     bool bInspecting=false;
     bool bOwnsPause=false;
+    bool bInspectionOwnerNoSee=false;
     bool bGameplayLocked=false;
     FText Notification;
     double NotificationUntil=0;

@@ -19,6 +19,9 @@ public:
     AHSRoomDirector();
     virtual void Tick(float Dt) override;
     UPROPERTY(VisibleAnywhere,BlueprintReadOnly) TObjectPtr<UBoxComponent> SafeArea;
+    UPROPERTY(VisibleAnywhere,BlueprintReadOnly) TObjectPtr<UBoxComponent> RoomBounds;
+    UPROPERTY(EditAnywhere,BlueprintReadWrite) bool bUseRoomBounds=false;
+    UFUNCTION(BlueprintCallable) void PrepareEntry();
     UPROPERTY(VisibleAnywhere,BlueprintReadOnly) TObjectPtr<UBoxComponent> ReturnBarrier;
     UPROPERTY(EditAnywhere,BlueprintReadWrite) TObjectPtr<UHSRoomRules> Rules;
     UPROPERTY(EditAnywhere,BlueprintReadWrite) TObjectPtr<AHSWindowSequence> WindowSequence;
@@ -46,6 +49,9 @@ public:
     virtual void Tick(float Dt) override;
     UPROPERTY(VisibleAnywhere,BlueprintReadOnly) TObjectPtr<UCameraComponent> Camera;
     UPROPERTY(EditAnywhere,BlueprintReadWrite) FVector CameraOffset=FVector(0,350,175);
+    // Local-space points between the player and the window; used in both directions.
+    UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Camera") TArray<FVector> CameraWaypoints;
+    UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Camera",meta=(ClampMin="12")) float CameraCollisionRadius=16.f;
     UPROPERTY(EditAnywhere,BlueprintReadWrite) FRotator WindowViewRotation=FRotator(0,-90,0);
     UPROPERTY(EditAnywhere,BlueprintReadWrite) FVector MonsterStart=FVector(-650,-300,92);
     UPROPERTY(EditAnywhere,BlueprintReadWrite) FVector MonsterLookPoint=FVector(0,-300,92);
@@ -59,6 +65,10 @@ public:
 private:
     FVector StartView;
     FRotator StartRotation;
+    TArray<FVector> CameraPath;
+    TArray<float> CameraPathDistances;
+    float CurrentPathDistance=0.f;
+    void MoveCameraAlongPath(float Alpha,const FQuat& Rotation);
 };
 
 UCLASS(Blueprintable)

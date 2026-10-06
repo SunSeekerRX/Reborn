@@ -5,6 +5,8 @@
 #include "HSSettings.h"
 #include "HSProgression.h"
 #include "HSRoomActors.h"
+#include "GameFramework/PlayerStart.h"
+#include "EngineUtils.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/TextRenderComponent.h"
@@ -25,6 +27,7 @@ AHSPickup::AHSPickup()
     static ConstructorHelpers::FObjectFinder<UStaticMesh> Shape(TEXT("/Engine/BasicShapes/Cube.Cube"));
     Mesh->SetStaticMesh(Shape.Object); Mesh->SetRelativeScale3D(FVector(.28f,.28f,.12f));
     Mesh->SetCollisionProfileName(TEXT("BlockAllDynamic"));
+    Mesh->bDisallowNanite=true;
     Label=CreateDefaultSubobject<UTextRenderComponent>(TEXT("Label")); Label->SetupAttachment(Mesh);
     Label->SetRelativeLocation(FVector(0,0,180)); Label->SetWorldSize(55);
     Label->SetHorizontalAlignment(EHTA_Center);
@@ -39,7 +42,7 @@ void AHSPickup::BeginPlay()
     Super::BeginPlay();
     Label->SetVisibility(false);
     const auto* Progress=GetGameInstance()->GetSubsystem<UHSProgression>();
-    if(Progress->Stage<MinimumStage || Progress->Stage>MaximumStage) { Destroy(); return; }
+    if(Progress->Stage<MinimumStage || Progress->Stage>MaximumStage) { SetActorHiddenInGame(true); Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision); }
     if(auto* S=GetGameInstance()->GetSubsystem<UHSWorldState>(); S && S->CollectedPickups.Contains(GetPersistentKey())) { Destroy(); return; }
     Label->SetText(FText::FromString(ItemData ? ItemData->ItemId.ToString().Replace(TEXT("DA_"),TEXT("")) : TEXT("Missing ItemData")));
     if(!ItemData) UE_LOG(LogTemp,Warning,TEXT("HorrorSystems: %s has no ItemData"),*GetName());
@@ -47,6 +50,11 @@ void AHSPickup::BeginPlay()
 void AHSPickup::Tick(float Dt)
 {
     Super::Tick(Dt);
+    const auto* Progress=GetGameInstance()->GetSubsystem<UHSProgression>();
+    const bool Available=Progress->Stage>=MinimumStage && Progress->Stage<=MaximumStage;
+    SetActorHiddenInGame(!Available);
+    Mesh->SetCollisionEnabled(Available?ECollisionEnabled::QueryAndPhysics:ECollisionEnabled::NoCollision);
+    if(!Available) return;
     if(bRotateForDemo) AddActorLocalRotation(FRotator(0,Dt*22,0));
     if(auto* PC=UGameplayStatics::GetPlayerController(this,0))
         Label->SetWorldRotation((PC->PlayerCameraManager->GetCameraLocation()-Label->GetComponentLocation()).Rotation());
@@ -55,7 +63,7 @@ bool AHSPickup::TryPickup(AHSCharacter* Character)
 {
     if(!Character || bClaimed || !ItemData) return false;
     auto* Progress=GetGameInstance()->GetSubsystem<UHSProgression>();
-    if(Progress->bCinematic || Progress->bCompleted) return false;
+    if(Progress->bCinematic || Progress->bCompleted || Progress->Stage<MinimumStage || Progress->Stage>MaximumStage) return false;
     if(FVector::Dist(Character->GetActorLocation(),GetActorLocation())>GetDefault<UHSSettings>()->PickupDistance) return false;
     auto* PC=Cast<AHSPlayerController>(Character->GetController());
     auto* Session=PC ? PC->GetSession() : nullptr;
@@ -93,6 +101,7 @@ void AHSPortal::BeginPlay()
 }
 bool AHSPortal::IsLocked() const
 {
+    if(!bTravelEnabled) return true;
     if(!bUseStageRoute) return false;
     const auto* P=GetGameInstance()->GetSubsystem<UHSProgression>();
     const auto* Route=RoomRules?RoomRules->RouteFor(P->Stage):nullptr;
@@ -109,7 +118,7 @@ void AHSPortal::OnOverlap(UPrimitiveComponent*,AActor* Other,UPrimitiveComponent
 { if(auto* Character=Cast<AHSCharacter>(Other)) Travel(Character); }
 bool AHSPortal::Travel(AHSCharacter* Character)
 {
-    if(!Character || bUsed || GetWorld()->GetTimeSeconds()<1.f || IsLocked()) return false;
+    if(!Character || bUsed || GetWorld()->GetTimeSeconds()<FMath::Max(1.f,LocalCooldownUntil) || IsLocked()) return false;
     auto* PC=Cast<AHSPlayerController>(Character->GetController());
     if(!PC || PC->IsInspecting()) return false;
     if(PC->IsGameplayLocked()) return false;
@@ -118,13 +127,25 @@ bool AHSPortal::Travel(AHSCharacter* Character)
     if(Route && Route->bFinishAtFinalStage && Progress->Stage==3)
     { Progress->CommitExit(*Route); bUsed=true; if(auto* Director=AHSRoomDirector::Find(GetWorld())) Director->BeginEnding(); return true; }
     const TSoftObjectPtr<UWorld> NextLevel=Route?Route->Destination:Destination;
+    if(bLocalTravel)
+    {
+        APlayerStart* Start=nullptr;
+        for(TActorIterator<APlayerStart> It(GetWorld());It;++It) if(It->PlayerStartTag==DestinationSpawnTag) { Start=*It; break; }
+        if(!Start) return false;
+        if(Route) Progress->CommitExit(*Route);
+        Character->ClearMovementModifiers(); Character->SelectedPainting.Reset();
+        for(TActorIterator<AHSRoomDirector> It(GetWorld());It;++It) if(It->Rules && It->Rules->RoomId==LocalTargetRoom) It->PrepareEntry();
+        Character->SetActorLocationAndRotation(Start->GetActorLocation(),Start->GetActorRotation()); PC->SetControlRotation(Start->GetActorRotation());
+        LocalCooldownUntil=GetWorld()->GetTimeSeconds()+1.f;
+        return true;
+    }
     // Fail before modifying session state if the configured destination is missing.
     UWorld* Level=NextLevel.LoadSynchronous();
     if(!Level) { PC->Notify(FText::FromString(TEXT("传送失败：请配置有效目标关卡"))); return false; }
     auto* S=PC->GetSession(); if(!S) return false;
     if(S->bTravelPending) return false;
     if(Route) Progress->CommitExit(*Route);
-    bUsed=true; S->bTravelPending=true; S->PendingSpawnTag=bUseStageRoute?FName(TEXT("Safe")):DestinationSpawnTag;
+    bUsed=true; S->bTravelPending=true; S->PendingSpawnTag=DestinationSpawnTag;
     if(TravelSound) UGameplayStatics::SpawnSound2D(this,TravelSound,.6f,1.f,0.f,nullptr,true,true);
     UGameplayStatics::OpenLevelBySoftObjectPtr(this,NextLevel);
     return true;
@@ -164,6 +185,7 @@ AHSVisionRig::AHSVisionRig()
 void AHSVisionRig::BeginPlay()
 {
     Super::BeginPlay();
+    if(auto* Outline=LoadObject<UMaterialInterface>(nullptr,TEXT("/HorrorSystems/Materials/M_InteractionOutline.M_InteractionOutline"))) PostProcess->AddOrUpdateBlendable(Outline,1.f);
     if(bUseProjectSettings)
     {
         const auto* S=GetDefault<UHSSettings>();
