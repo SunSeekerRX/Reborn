@@ -20,6 +20,7 @@ class HORRORSYSTEMS_API AHSMonster : public ACharacter
 public:
     UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Pursuit") FName HomeRoom;
     AHSMonster();
+    UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Vision") TObjectPtr<class UPointLightComponent> RedAuraLight;
     virtual void BeginPlay() override;
     virtual void Tick(float Dt) override;
     UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Combat") bool bCanDamagePlayer=false;

@@ -11,6 +11,7 @@
 #include "Components/BoxComponent.h"
 #include "Components/TextRenderComponent.h"
 #include "Components/AudioComponent.h"
+#include "Components/PointLightComponent.h"
 #include "Components/ExponentialHeightFogComponent.h"
 #include "Components/PostProcessComponent.h"
 #include "Engine/StaticMesh.h"
@@ -19,6 +20,7 @@
 #include "Sound/SoundAttenuation.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "Misc/PackageName.h"
 
 AHSPickup::AHSPickup()
 {
@@ -77,7 +79,7 @@ bool AHSPickup::TryPickup(AHSCharacter* Character)
     PC->Notify(FText::Format(FText::FromString(TEXT("已拾取：{0} · 按 R 检视")),ItemData->DisplayName));
     Character->StartPickupAnimation(ItemData,GetActorLocation());
     Character->OnItemPickedUp(ItemData);
-    // Character waits until the first-person pickup animation finishes before inspection.
+    // Inspection is requested separately from the inventory after collecting.
     Destroy(); return true;
 }
 
@@ -91,6 +93,9 @@ AHSPortal::AHSPortal()
     static ConstructorHelpers::FObjectFinder<UStaticMesh> Shape(TEXT("/Engine/BasicShapes/Cube.Cube"));
     Marker->SetStaticMesh(Shape.Object); Marker->SetRelativeScale3D(FVector(.12f,2.4f,3.f));
     Marker->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    PortalLight=CreateDefaultSubobject<UPointLightComponent>(TEXT("WhitePortalLight"));PortalLight->SetupAttachment(Trigger);
+    PortalLight->SetRelativeLocation(FVector(60,0,0));PortalLight->SetIntensityUnits(ELightUnits::Lumens);
+    PortalLight->SetIntensity(4000);PortalLight->SetAttenuationRadius(450);PortalLight->SetVisibility(false);
     Label=CreateDefaultSubobject<UTextRenderComponent>(TEXT("Label")); Label->SetupAttachment(Trigger);
     Label->SetRelativeLocation(FVector(0,0,185)); Label->SetWorldSize(30); Label->SetHorizontalAlignment(EHTA_Center);
 }
@@ -102,17 +107,27 @@ void AHSPortal::BeginPlay()
 bool AHSPortal::IsLocked() const
 {
     if(!bTravelEnabled) return true;
+    if(bRequiresSafeReturn)
+    {
+        const auto* Room=AHSRoomDirector::Find(GetWorld());
+        if(!Room || Room->Rules!=RoomRules || !Room->bSafeTravelReady) return true;
+    }
     if(!bUseStageRoute) return false;
     const auto* P=GetGameInstance()->GetSubsystem<UHSProgression>();
-    const auto* Route=RoomRules?RoomRules->RouteFor(P->Stage):nullptr;
+    const auto* Director=bRequiresSafeReturn?AHSRoomDirector::Find(GetWorld()):nullptr;
+    const auto* Route=Director?Director->TravelRoute():RoomRules?RoomRules->RouteFor(P->Stage):nullptr;
     return !Route || !P->CanExit(*Route);
 }
 void AHSPortal::Tick(float Dt)
 {
-    Super::Tick(Dt); if(!bUseStageRoute || bUsed) return;
+    Super::Tick(Dt);
+    if(!bTravelEnabled) {Marker->SetVisibility(false);PortalLight->SetVisibility(false);return;}
+    if(!bUseStageRoute || bUsed) return;
+    const bool Locked=IsLocked();
     Marker->SetCollisionResponseToAllChannels(ECR_Ignore); Marker->SetCollisionResponseToChannel(ECC_Pawn,ECR_Block);
-    Marker->SetCollisionEnabled(IsLocked()?ECollisionEnabled::QueryAndPhysics:ECollisionEnabled::NoCollision);
-    if(!IsLocked()) if(auto* C=Cast<AHSCharacter>(UGameplayStatics::GetPlayerPawn(this,0)); C && Trigger->IsOverlappingActor(C)) Travel(C);
+    Marker->SetCollisionEnabled(Locked && !bWhiteLightTravel?ECollisionEnabled::QueryAndPhysics:ECollisionEnabled::NoCollision);
+    if(bWhiteLightTravel) {Marker->SetVisibility(!Locked);PortalLight->SetVisibility(!Locked);}
+    if(!Locked) if(auto* C=Cast<AHSCharacter>(UGameplayStatics::GetPlayerPawn(this,0)); C && Trigger->IsOverlappingActor(C)) Travel(C);
 }
 void AHSPortal::OnOverlap(UPrimitiveComponent*,AActor* Other,UPrimitiveComponent*,int32,bool,const FHitResult&)
 { if(auto* Character=Cast<AHSCharacter>(Other)) Travel(Character); }
@@ -123,10 +138,20 @@ bool AHSPortal::Travel(AHSCharacter* Character)
     if(!PC || PC->IsInspecting()) return false;
     if(PC->IsGameplayLocked()) return false;
     auto* Progress=GetGameInstance()->GetSubsystem<UHSProgression>();
-    const auto* Route=bUseStageRoute && RoomRules?RoomRules->RouteFor(Progress->Stage):nullptr;
+    const auto* Director=bRequiresSafeReturn?AHSRoomDirector::Find(GetWorld()):nullptr;
+    const auto* Route=bUseStageRoute?(Director?Director->TravelRoute():RoomRules?RoomRules->RouteFor(Progress->Stage):nullptr):nullptr;
     if(Route && Route->bFinishAtFinalStage && Progress->Stage==3)
-    { Progress->CommitExit(*Route); bUsed=true; if(auto* Director=AHSRoomDirector::Find(GetWorld())) Director->BeginEnding(); return true; }
+    { Progress->CommitExit(*Route); bUsed=true; if(auto* EndingDirector=AHSRoomDirector::Find(GetWorld())) EndingDirector->BeginEnding(); return true; }
     const TSoftObjectPtr<UWorld> NextLevel=Route?Route->Destination:Destination;
+    if(bWhiteLightTravel && Route)
+    {
+        auto* Session=PC->GetSession();
+        if(!Session || (!bLocalTravel && !FPackageName::DoesPackageExist(NextLevel.GetLongPackageName()))) return false;
+          const FName Spawn=Route->TargetRoom==TEXT("RoomA")?FName(TEXT("Safe_A")):Route->TargetRoom==TEXT("RoomB")?FName(TEXT("Safe_B")):Route->TargetRoom==TEXT("RoomC")?FName(TEXT("Safe_C")):DestinationSpawnTag;
+          if(Session->BeginWhiteTravel(*Route,Spawn,bLocalTravel,LocalTargetRoom))
+        {bUsed=true;return true;}
+        return false;
+    }
     if(bLocalTravel)
     {
         APlayerStart* Start=nullptr;

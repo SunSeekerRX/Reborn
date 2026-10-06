@@ -14,6 +14,7 @@ struct FHSRoomRoute
     UPROPERTY(EditAnywhere,BlueprintReadWrite) TSoftObjectPtr<UWorld> Destination;
     UPROPERTY(EditAnywhere,BlueprintReadWrite) TArray<FName> RequiredClues;
     UPROPERTY(EditAnywhere,BlueprintReadWrite) bool bAdvanceStage=false;
+    UPROPERTY(EditAnywhere,BlueprintReadWrite) bool bAdvanceOnSafeReturn=false;
     UPROPERTY(EditAnywhere,BlueprintReadWrite) bool bFinishAtFinalStage=false;
 };
 

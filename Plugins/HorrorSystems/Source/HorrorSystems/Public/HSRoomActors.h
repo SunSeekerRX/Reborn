@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "HSProgression.h"
 #include "HSRoomActors.generated.h"
 class UBoxComponent;
 class UStaticMeshComponent;
@@ -27,6 +28,14 @@ public:
     UPROPERTY(EditAnywhere,BlueprintReadWrite) TObjectPtr<AHSWindowSequence> WindowSequence;
     UPROPERTY(EditAnywhere,BlueprintReadWrite) FName SafeSpawnTag=TEXT("Safe");
     UPROPERTY(EditAnywhere,BlueprintReadWrite) bool bPlayFirstEntrySequence=true;
+    UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Progression") bool bReturnToSafeAfterObjective=false;
+    UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Progression") bool bFinalEscapeMode=false;
+    UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Progression") FHSRoomRoute ReadyTravelRoute;
+    const FHSRoomRoute* TravelRoute() const;
+    UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Progression",meta=(ClampMin="1",ClampMax="3")) int32 MinimumStage=1;
+    UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Progression") bool bObjectiveAcquired=false;
+    UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Progression") bool bSafeTravelReady=false;
+    UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Progression") bool bHasLeftSafeArea=false;
     UPROPERTY(VisibleAnywhere,BlueprintReadOnly) bool bSafeAreaSealed=false;
     UPROPERTY(VisibleAnywhere,BlueprintReadOnly) float EndingTime=0;
     UFUNCTION(BlueprintCallable) void FinishIntro();
@@ -38,6 +47,7 @@ public:
     static AHSRoomDirector* Find(UWorld* World);
 private:
     bool bInitialized=false,bResetting=false;
+    FTransform SafeRecoveryTransform;
 };
 
 UCLASS(Blueprintable)

@@ -5,6 +5,7 @@
 #include "HSItemData.h"
 #include "HSProgression.h"
 #include "HSRoomActors.h"
+#include "HSCharacter.h"
 #include "Widgets/Notifications/SProgressBar.h"
 #include "Kismet/GameplayStatics.h"
 #include "Framework/Application/SlateApplication.h"
@@ -21,6 +22,7 @@
 #include "Styling/CoreStyle.h"
 #include "Input/DragAndDrop.h"
 #include "Engine/Texture2D.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 namespace
 {
@@ -79,6 +81,8 @@ namespace
                     })
                     [SNew(SBorder).Padding(4).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(Ink)
                         [SNew(SVerticalBox)
+                            +SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Left)
+                            [SNew(STextBlock).Text(FText::AsNumber((Index+1)%10)).Font(Font(10)).ColorAndOpacity(Accent)]
                             +SVerticalBox::Slot().FillHeight(1).HAlign(HAlign_Center).VAlign(VAlign_Center)
                             [SNew(SBox).WidthOverride(32).HeightOverride(32)[SNew(SImage).Image(&Brush).Visibility_Lambda([this]{return Item()&&Item()->Icon?EVisibility::HitTestInvisible:EVisibility::Hidden;})]]
                         ]
@@ -99,6 +103,12 @@ namespace
                 return FReply::Handled().DetectDrag(SharedThis(this),EKeys::LeftMouseButton);
             }
             if(E.GetEffectingButton()==EKeys::RightMouseButton && PC.IsValid()) { PC->SelectSlot(Index); PC->InspectSelected(); return FReply::Handled(); }
+            return FReply::Unhandled();
+        }
+        virtual FReply OnMouseButtonDoubleClick(const FGeometry&,const FPointerEvent& E) override
+        {
+            if(E.GetEffectingButton()==EKeys::LeftMouseButton && PC.IsValid() && !PC->IsInspecting() && !PC->IsGameplayLocked())
+            { PC->SelectSlot(Index); if(Item()) PC->InspectItem(Item()); return FReply::Handled(); }
             return FReply::Unhandled();
         }
         virtual FReply OnDragDetected(const FGeometry&,const FPointerEvent&) override
@@ -123,6 +133,8 @@ namespace
 void SHSOverlay::Construct(const FArguments& Args)
 {
     Controller=Args._Controller;
+    MobiusBrush.SetResourceObject(Controller.IsValid()?Controller->TitleTexture.Get():nullptr);
+    MobiusBrush.ImageSize=FVector2D(160,110);MobiusBrush.DrawAs=ESlateBrushDrawType::Image;
     TSharedRef<SHorizontalBox> Bar=SNew(SHorizontalBox);
     for(int32 I=0;I<10;++I)
         Bar->AddSlot().AutoWidth().Padding(3,0)[SNew(SHSSlot).Index(I).Controller(Controller).Overlay(SharedThis(this))];
@@ -151,6 +163,13 @@ void SHSOverlay::Construct(const FArguments& Args)
             +SVerticalBox::Slot().AutoHeight().Padding(3,8,3,0)
             [SNew(SBox).WidthOverride(694).HeightOverride(7)
                 [SNew(SProgressBar).Style(&HealthBarStyle()).Percent_Lambda([this]() -> TOptional<float> { auto* S=Controller.IsValid()?Controller->GetSession():nullptr; return S?S->Lives/3.f:1.f; }).FillColorAndOpacity(FLinearColor(.72f,.16f,.18f,1))]]
+        ]
+        +SOverlay::Slot()[SNew(SCanvas).Visibility(EVisibility::SelfHitTestInvisible)
+            +SCanvas::Slot().Position_Lambda([this]{return InteractionPromptPosition;}).Size(FVector2D(36,36))
+            [SNew(SBorder).Padding(0).HAlign(HAlign_Center).VAlign(VAlign_Center)
+                .BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.015f,.02f,.025f,.8f))
+                .Visibility_Lambda([this]{return bInteractionPromptVisible?EVisibility::HitTestInvisible:EVisibility::Collapsed;})
+                [SNew(STextBlock).Text(FText::FromString(TEXT("E"))).Font(Font(22)).ColorAndOpacity(Accent)]]
         ]
         +SOverlay::Slot()[SNew(SCanvas).Visibility(EVisibility::SelfHitTestInvisible)
             +SCanvas::Slot().Position_Lambda([this]{return TooltipPosition;}).Size(FVector2D(300,145))
@@ -192,11 +211,32 @@ void SHSOverlay::Construct(const FArguments& Args)
         [SNew(SBox).HeightOverride_Lambda([this]{return GetCachedGeometry().GetLocalSize().Y*.12f;}).Visibility_Lambda([this]{return CinematicPlaying()?EVisibility::HitTestInvisible:EVisibility::Collapsed;})
             [SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor::Black)]]
         +SOverlay::Slot()
+        [SNew(SBorder).Visibility_Lambda([this]{return Controller.IsValid() && Controller->GetSession()->bTitleScreen?EVisibility::Visible:EVisibility::Collapsed;})
+            .Padding(0).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.009f,.014f,.021f,1))
+            .HAlign(HAlign_Center).VAlign(VAlign_Center)
+            [SNew(SVerticalBox)
+                +SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
+                [SNew(SBox).WidthOverride(480).HeightOverride(330)[SNew(SImage).Image(&MobiusBrush)]]
+                +SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0,-20,0,38)
+                [SNew(STextBlock).Text(FText::FromString(TEXT("REBORN"))).Font(Font(54)).ColorAndOpacity(FLinearColor(.83f,.9f,.86f,1))]
+                +SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
+                [SNew(SBox).WidthOverride(240).HeightOverride(48)[SNew(SButton).HAlign(HAlign_Center).VAlign(VAlign_Center)
+                    .IsEnabled_Lambda([this]{return Controller.IsValid() && !Controller->GetSession()->bWhiteTransition;})
+                    .OnClicked_Lambda([this]{if(Controller.IsValid()) Controller->GetSession()->BeginMenuTravel(true);return FReply::Handled();})
+                    [SNew(STextBlock).Text(FText::FromString(TEXT("开始游戏"))).Font(Font(18))]]]
+                +SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0,16,0,0)
+                [SNew(SBox).WidthOverride(240).HeightOverride(48)[SNew(SButton).HAlign(HAlign_Center).VAlign(VAlign_Center)
+                    .IsEnabled_Lambda([this]{return Controller.IsValid() && !Controller->GetSession()->bWhiteTransition;})
+                    .OnClicked_Lambda([this]{if(Controller.IsValid()) UKismetSystemLibrary::QuitGame(Controller.Get(),Controller.Get(),EQuitPreference::Quit,false);return FReply::Handled();})
+                    [SNew(STextBlock).Text(FText::FromString(TEXT("退出游戏"))).Font(Font(18))]]]
+            ]
+        ]
+        +SOverlay::Slot()
         [SNew(SBorder).Visibility_Lambda([this]{return EndTime()>0?EVisibility::Visible:EVisibility::Collapsed;})
             .BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.015f,.02f,.025f,1))
             .HAlign(HAlign_Center).VAlign(VAlign_Center)
             [SNew(SVerticalBox).Visibility_Lambda([this]{return EndTime()>1.5f?EVisibility::Visible:EVisibility::Hidden;})
-                +SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[SNew(STextBlock).Text(FText::FromString(TEXT("黎明已至"))).Font(Font(36)).ColorAndOpacity(Accent)]
+                +SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[SNew(STextBlock).Text(FText::FromString(TEXT("REBORN"))).Font(Font(48)).ColorAndOpacity(Accent)]
                 +SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0,18)[SNew(STextBlock).Text(FText::FromString(TEXT("游戏结束"))).Font(Font(18)).ColorAndOpacity(Accent)]
                 +SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[SNew(SButton).OnClicked_Lambda([this]{ if(Controller.IsValid()) { Controller->GetSession()->ResetSession(); UGameplayStatics::OpenLevel(Controller.Get(),TEXT("/HorrorSystems/Maps/Basic_roomA")); } return FReply::Handled(); })[SNew(STextBlock).Text(FText::FromString(TEXT("重新开始"))).Font(Font(16))]]
             ]
@@ -220,7 +260,7 @@ bool SHSOverlay::CinematicPlaying() const
 { auto* D=Controller.IsValid()?AHSRoomDirector::Find(Controller->GetWorld()):nullptr; return D && D->Progress()->bCinematic; }
 float SHSOverlay::EndTime() const
 { auto* D=Controller.IsValid()?AHSRoomDirector::Find(Controller->GetWorld()):nullptr; return D?D->EndingTime:0.f; }
-EVisibility SHSOverlay::GameplayVisibility() const { return CinematicPlaying() || EndTime()>0 || (Controller.IsValid() && Controller->GetSession()->IsDefeated())?EVisibility::Collapsed:EVisibility::SelfHitTestInvisible; }
+EVisibility SHSOverlay::GameplayVisibility() const { return CinematicPlaying() || EndTime()>0 || (Controller.IsValid() && (Controller->GetSession()->bTitleScreen || Controller->GetSession()->IsDefeated()))?EVisibility::Collapsed:EVisibility::SelfHitTestInvisible; }
 FText SHSOverlay::CountdownText() const
 {
     auto* D=Controller.IsValid()?AHSRoomDirector::Find(Controller->GetWorld()):nullptr;
@@ -232,8 +272,12 @@ FText SHSOverlay::ClueText() const
 {
     auto* D=Controller.IsValid()?AHSRoomDirector::Find(Controller->GetWorld()):nullptr;
     if(!D || !D->Rules) return FText::GetEmpty();
-    const auto* P=D->Progress(); const auto* R=D->Rules->RouteFor(P->Stage);
+    const auto* P=D->Progress(); const auto* R=D->TravelRoute();
     FString Text=FString::Printf(TEXT("%s  ·  阶段 %d\n\n线索"),*D->Rules->RoomName.ToString(),P->Stage);
+    if(D->bReturnToSafeAfterObjective)
+        Text=FString::Printf(TEXT("%s  ·  第 %d 关\n\n任务：%s\n\n线索"),*D->Rules->RoomName.ToString(),P->Stage,D->bSafeTravelReady?TEXT("进入白光传送门"):D->bObjectiveAcquired?TEXT("赶紧返回安全屋"):TEXT("寻找关键物品"));
+    if(D->bFinalEscapeMode)
+        Text=FString::Printf(TEXT("第 3 关\n\n任务：%s\n\n线索"),P->HasClue(TEXT("Key_3"))?TEXT("前往地图末端的最终出口"):TEXT("在 A 房间寻找最终信息"));
     if(R) for(FName C:R->RequiredClues)
     { const FText* Label=D->Rules->ClueLabels.Find(C); Text+=FString::Printf(TEXT("\n%s  %s"),P->HasClue(C)?TEXT("[已获得]"):TEXT("[未获得]"),Label?*Label->ToString():*C.ToString()); }
     return FText::FromString(Text);
@@ -246,6 +290,15 @@ UHSItemData* SHSOverlay::HoverItem() const
 void SHSOverlay::Tick(const FGeometry& G,double T,float Dt)
 {
     SCompoundWidget::Tick(G,T,Dt);
+    bInteractionPromptVisible=false;
+    auto* Character=Controller.IsValid()?Cast<AHSCharacter>(Controller->GetPawn()):nullptr;
+    FVector Anchor;FVector2D Screen;int32 Width=0,Height=0;
+    if(Character && GameplayVisibility()==EVisibility::SelfHitTestInvisible && Character->GetInteractionPromptLocation(Anchor) && Controller->ProjectWorldLocationToScreen(Anchor,Screen,true))
+    {
+        Controller->GetViewportSize(Width,Height);
+        if(Width>0 && Height>0 && Screen.X>=18 && Screen.X<Width-18 && Screen.Y>=36 && Screen.Y<Height)
+        {InteractionPromptPosition=Screen*G.GetLocalSize()/FVector2D(Width,Height)-FVector2D(18,36);bInteractionPromptVisible=true;}
+    }
     FVector2D Local=G.AbsoluteToLocal(FSlateApplication::Get().GetCursorPos());
     TooltipPosition=FVector2D(FMath::Clamp(Local.X+18.f,8.f,FMath::Max(8.f,G.GetLocalSize().X-308.f)), FMath::Clamp(Local.Y-155.f,8.f,FMath::Max(8.f,G.GetLocalSize().Y-155.f)));
     UHSItemData* Item=Controller.IsValid()?Controller->GetInspectionItem():nullptr;
@@ -265,6 +318,6 @@ FReply SHSOverlay::OnKeyDown(const FGeometry&,const FKeyEvent& E)
     if(E.GetKey()==EKeys::R) { Controller->InspectSelected(); return FReply::Handled(); }
     if(E.GetKey()==EKeys::Tab) { Controller->ToggleHotbarMouse(); return FReply::Handled(); }
     const FKey Keys[]={EKeys::One,EKeys::Two,EKeys::Three,EKeys::Four,EKeys::Five,EKeys::Six,EKeys::Seven,EKeys::Eight,EKeys::Nine,EKeys::Zero};
-    for(int32 I=0;I<10;++I) if(E.GetKey()==Keys[I]) { Controller->SelectSlot(I); return FReply::Handled(); }
+    for(int32 I=0;I<10;++I) if(E.GetKey()==Keys[I]) { Controller->ActivateNumberSlot(I); return FReply::Handled(); }
     return FReply::Unhandled();
 }

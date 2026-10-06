@@ -21,10 +21,12 @@ public:
     UFUNCTION(BlueprintCallable, Category="UI") void InspectItem(UHSItemData* Item);
     UFUNCTION(BlueprintCallable, Category="UI") void CloseInspection();
     UFUNCTION(BlueprintCallable, Category="UI") void SelectSlot(int32 Index);
+    UFUNCTION(BlueprintCallable, Category="UI") void ActivateNumberSlot(int32 Index);
     UFUNCTION(BlueprintPure, Category="UI") UHSWorldState* GetSession() const;
     void Notify(const FText& Message, float Seconds=3.f);
     FText GetNotification() const;
-    bool IsMouseMode() const { return bHotbarMouse || bInspecting; }
+    bool IsMouseMode() const;
+    UPROPERTY() TObjectPtr<class UTexture2D> TitleTexture;
     bool IsInspecting() const { return bInspecting; }
     UHSItemData* GetInspectionItem() const { return InspectionItem; }
     void Escape();
@@ -41,5 +43,7 @@ protected:
     bool bGameplayLocked=false;
     FText Notification;
     double NotificationUntil=0;
+    int32 LastNumberSlot=INDEX_NONE;
+    double LastNumberTime=-1;
     TSharedPtr<SHSOverlay> Overlay;
 };

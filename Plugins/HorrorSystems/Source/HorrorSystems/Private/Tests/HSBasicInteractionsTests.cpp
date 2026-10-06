@@ -4,6 +4,7 @@
 #include "HSPlayerController.h"
 #include "HSRoomActors.h"
 #include "HSProgression.h"
+#include "HSWorldState.h"
 #include "HSSettings.h"
 #include "Materials/MaterialInterface.h"
 #include "HSAI.h"
@@ -86,15 +87,23 @@ public:
             [[fallthrough]];
         case 1:
             Room->FinishIntro();PC->SetGameplayLocked(false);
+            Progress->SetStage(3);
             for(TActorIterator<AHSMonster> It(W);It;++It) {It->bCanDamagePlayer=false;It->bCinematicActor=true;It->GetCharacterMovement()->StopMovementImmediately();It->SetActorLocation(FVector(-800,-900,192));}
             for(TActorIterator<AHSInspectTrigger> It(W);It;++It) if(It->GetActorLocation().Y>-1200) {Trigger=*It;break;}
             for(TActorIterator<AHSSwapPainting> It(W);It;++It) if(It->GetActorLocation().Y>-1200) {if(!First.IsValid()) First=*It;else if(!Second.IsValid()) Second=*It;}
             if(!Trigger.IsValid() || !First.IsValid() || !Second.IsValid()) {Test->AddError(TEXT("Basic furniture interaction bindings missing"));return true;}
+            Trigger->Tick(0);
             Focus(Player,PC,Trigger.Get());
             Test->TestEqual(TEXT("Inspectable record is chosen by camera trace"),Player->FocusedInteraction.Get(),static_cast<AActor*>(Trigger.Get()));
             CheckSingleHighlight(W,Player); BookStart=Trigger->Obstacle->GetActorLocation();
             Player->Interact();
-            Test->TestTrue(TEXT("E opens 3D inspection"),PC->IsInspecting());
+            Test->TestFalse(TEXT("E collects the record without opening inspection"),PC->IsInspecting());
+            {
+            const int32 RecordSlot=PC->GetSession()->Slots.IndexOfByPredicate([&](const FHSItemSlot& S){return S.Item==Trigger->GetCollectedItem();});
+            Test->TestTrue(TEXT("Record is stored in a hotbar slot"),RecordSlot!=INDEX_NONE);
+            PC->SelectSlot(RecordSlot);PC->ActivateNumberSlot(RecordSlot);PC->ActivateNumberSlot(RecordSlot);
+            Test->TestTrue(TEXT("Double number opens 3D inspection"),PC->IsInspecting());
+            }
             Test->TestTrue(TEXT("Inspection pauses the game"),UGameplayStatics::IsGamePaused(W));
             FrozenTime=W->GetTimeSeconds();Remaining=Progress->GetRemaining();
             Until=FPlatformTime::Seconds()+2;return false;

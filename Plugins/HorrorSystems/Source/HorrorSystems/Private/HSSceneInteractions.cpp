@@ -14,6 +14,25 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Components/BoxComponent.h"
+#include "HSRoomActors.h"
+
+AHSRecoveryCheckpoint::AHSRecoveryCheckpoint()
+{
+    PrimaryActorTick.bCanEverTick=true;SafeArea=CreateDefaultSubobject<UBoxComponent>(TEXT("CheckpointArea"));RootComponent=SafeArea;
+    SafeArea->SetBoxExtent(FVector(140,140,200));SafeArea->SetCollisionResponseToAllChannels(ECR_Ignore);
+    SafeArea->SetCollisionResponseToChannel(ECC_Pawn,ECR_Block);SafeArea->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    SafeArea->SetCanEverAffectNavigation(false);
+}
+void AHSRecoveryCheckpoint::Tick(float Dt)
+{
+    Super::Tick(Dt);auto* P=GetGameInstance()->GetSubsystem<UHSProgression>();
+    const bool Unlocked=P->Stage==3 && P->HasClue(TEXT("Key_3"));
+    SafeArea->SetCollisionEnabled(Unlocked?ECollisionEnabled::NoCollision:ECollisionEnabled::QueryAndPhysics);
+    auto* Player=Cast<AHSCharacter>(UGameplayStatics::GetPlayerPawn(this,0));
+    if(!Unlocked || !Player || !SafeArea->Bounds.GetBox().IsInsideOrOn(Player->GetActorLocation())) return;
+    auto* S=GetGameInstance()->GetSubsystem<UHSWorldState>();S->RecoveryTransform=SpawnTransform;S->bHasRecovery=true;S->bRecoverySafety=true;P->bTimerRunning=false;
+}
 
 AHSSceneAudio::AHSSceneAudio()
 {
@@ -60,7 +79,7 @@ AHSCollapsingObstacle::AHSCollapsingObstacle()
 }
 void AHSCollapsingObstacle::StartCollapse()
 {
-    if(bFalling || bCollapsed) return;
+    if(bFalling || bCollapsed || GetGameInstance()->GetSubsystem<UHSProgression>()->Stage<MinimumCollapseStage) return;
     Start=GetActorTransform(); Pivot=Start.TransformPosition(FallPivotOffset); Elapsed=0.f; bFalling=true;
     auto* Sound=CollapseSound?CollapseSound.Get():GetDefault<UHSSettings>()->CollapseSound.LoadSynchronous();
     if(Sound) UGameplayStatics::PlaySoundAtLocation(this,Sound,GetActorLocation());
@@ -76,23 +95,62 @@ void AHSCollapsingObstacle::Tick(float Dt)
 }
 AHSInspectTrigger::AHSInspectTrigger()
 {
+    PrimaryActorTick.bCanEverTick=true;
     Mesh=CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InspectableMesh"));RootComponent=Mesh;
     Mesh->SetCollisionProfileName(TEXT("BlockAllDynamic"));
     Mesh->bDisallowNanite=true;
 }
+FString AHSInspectTrigger::GetPickupKey() const
+{ return UGameplayStatics::GetCurrentLevelName(this,true)+TEXT(":Record:")+GetName(); }
+void AHSInspectTrigger::BeginPlay()
+{
+    Super::BeginPlay();
+    if(!bCollectToHotbar) return;
+    auto* S=GetGameInstance()->GetSubsystem<UHSWorldState>();
+    for(const auto& Slot:S->Slots) if(Slot.WorldPickupKey==GetPickupKey() && Slot.Item)
+    { CollectedItem=Slot.Item;bCollected=true;bArmed=true;break; }
+    if(bCollected || S->CollectedPickups.Contains(GetPickupKey()))
+    {bCollected=true;SetActorHiddenInGame(true);SetActorEnableCollision(false);Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);}
+    Tick(0);
+}
+void AHSInspectTrigger::Tick(float Dt)
+{
+    Super::Tick(Dt);
+    if(!bCollected && Obstacle)
+    {
+        const bool Available=GetGameInstance()->GetSubsystem<UHSProgression>()->Stage>=Obstacle->MinimumCollapseStage;
+        if(IsHidden()==Available)
+        {SetActorHiddenInGame(!Available);SetActorEnableCollision(Available);Mesh->SetCollisionEnabled(Available?ECollisionEnabled::QueryAndPhysics:ECollisionEnabled::NoCollision);}
+    }
+    if(bArmed && !InspectingController.IsValid())
+        if(auto* PC=Cast<AHSPlayerController>(UGameplayStatics::GetPlayerController(this,0)))
+        { InspectingController=PC;PC->OnInspectionClosed.AddUniqueDynamic(this,&AHSInspectTrigger::OnInspectionClosed); }
+}
 bool AHSInspectTrigger::Interact(AHSCharacter* Player)
 {
     auto* PC=Player?Cast<AHSPlayerController>(Player->GetController()):nullptr;
-    if(!PC || !ItemData || PC->IsInspecting() || PC->IsGameplayLocked() || FVector::Dist(Player->GetActorLocation(),GetActorLocation())>280.f) return false;
-    PC->InspectItem(ItemData);
-    if(!PC->IsInspecting()) return false;
+    if(!PC || !ItemData || bCollected || PC->IsInspecting() || PC->IsGameplayLocked() || FVector::Dist(Player->GetActorLocation(),GetActorLocation())>280.f) return false;
+    if(Obstacle && GetGameInstance()->GetSubsystem<UHSProgression>()->Stage<Obstacle->MinimumCollapseStage) return false;
+    if(bCollectToHotbar)
+    {
+        // Each note owns its inspection identity even when all use the same asset.
+        // Closing one collected note must only trigger its corresponding obstacle.
+        auto* Instance=DuplicateObject<UHSItemData>(ItemData,PC->GetSession());
+        Instance->SetFlags(RF_Transient);Instance->ClearFlags(RF_Public|RF_Standalone);
+        if(!PC->GetSession()->TryAddItem(Instance,GetPickupKey())) return false;
+        CollectedItem=Instance;bCollected=true;
+        Player->StartPickupAnimation(Instance,GetActorLocation());Player->OnItemPickedUp(Instance);
+        if(Instance->PickupSound) UGameplayStatics::PlaySound2D(this,Instance->PickupSound,.6f);
+        SetActorHiddenInGame(true);SetActorEnableCollision(false);Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    }
+    else {PC->InspectItem(ItemData);if(!PC->IsInspecting()) return false;}
     InspectingController=PC; bArmed=true;
     PC->OnInspectionClosed.AddUniqueDynamic(this,&AHSInspectTrigger::OnInspectionClosed);
     return true;
 }
 void AHSInspectTrigger::OnInspectionClosed(UHSItemData* Item)
 {
-    if(!bArmed || Item!=ItemData) return;
+    if(!bArmed || Item!=(CollectedItem?CollectedItem.Get():ItemData.Get())) return;
     bArmed=false;
     if(InspectingController.IsValid()) InspectingController->OnInspectionClosed.RemoveDynamic(this,&AHSInspectTrigger::OnInspectionClosed);
     if(Obstacle) Obstacle->StartCollapse();

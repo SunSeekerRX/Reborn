@@ -10,11 +10,14 @@
 #include "Kismet/GameplayStatics.h"
 #include "Framework/Application/SlateApplication.h"
 #include "Camera/PlayerCameraManager.h"
+#include "Engine/Texture2D.h"
 
 AHSPlayerController::AHSPlayerController() { PrimaryActorTick.bTickEvenWhenPaused=true; }
 void AHSPlayerController::BeginPlay()
 {
     Super::BeginPlay();
+    GetSession()->bTitleScreen=UGameplayStatics::GetCurrentLevelName(this,true)==TEXT("RebornTitle");
+    if(GetSession()->bTitleScreen) {bGameplayLocked=true;TitleTexture=LoadObject<UTexture2D>(nullptr,TEXT("/HorrorSystems/UI/T_MobiusPixel.T_MobiusPixel"));}
     if(PlayerCameraManager) { PlayerCameraManager->ViewPitchMin=-80.f; PlayerCameraManager->ViewPitchMax=80.f; }
     FRotator InitialView=GetControlRotation(); InitialView.Pitch=-8.f; SetControlRotation(InitialView);
     if(IsLocalController() && GetWorld()->GetGameViewport())
@@ -39,12 +42,23 @@ void AHSPlayerController::SetupInputComponent()
     for(int32 I=0;I<10;++I)
     {
         FInputKeyBinding Binding(FInputChord(Keys[I]),IE_Pressed);
-        Binding.KeyDelegate.GetDelegateForManualSet().BindLambda([this,I]{ SelectSlot(I); });
+        Binding.KeyDelegate.GetDelegateForManualSet().BindLambda([this,I]{ ActivateNumberSlot(I); });
         InputComponent->KeyBindings.Add(Binding);
     }
 }
 UHSWorldState* AHSPlayerController::GetSession() const { return GetGameInstance()?GetGameInstance()->GetSubsystem<UHSWorldState>():nullptr; }
-void AHSPlayerController::SelectSlot(int32 Index) { if(!bInspecting) if(auto* S=GetSession()) S->SelectSlot(Index); }
+bool AHSPlayerController::IsMouseMode() const {return bHotbarMouse || bInspecting || (GetSession() && GetSession()->bTitleScreen);}
+void AHSPlayerController::SelectSlot(int32 Index) { LastNumberSlot=INDEX_NONE; if(!bInspecting) if(auto* S=GetSession()) S->SelectSlot(Index); }
+void AHSPlayerController::ActivateNumberSlot(int32 Index)
+{
+    auto* S=GetSession();
+    if(!S || bInspecting || bGameplayLocked || !S->Slots.IsValidIndex(Index)) { LastNumberSlot=INDEX_NONE; return; }
+    const double Now=FPlatformTime::Seconds();
+    const bool bDouble=LastNumberSlot==Index && Now-LastNumberTime<=.35;
+    SelectSlot(Index);
+    LastNumberSlot=Index; LastNumberTime=Now;
+    if(bDouble && S->GetSelectedItem()) {LastNumberSlot=INDEX_NONE; InspectItem(S->GetSelectedItem());}
+}
 void AHSPlayerController::Notify(const FText& Text,float Seconds) { Notification=Text; NotificationUntil=FPlatformTime::Seconds()+Seconds; }
 FText AHSPlayerController::GetNotification() const { return FPlatformTime::Seconds()<NotificationUntil?Notification:FText::GetEmpty(); }
 void AHSPlayerController::ToggleHotbarMouse() { if(bGameplayLocked || bInspecting) return; bHotbarMouse=!bHotbarMouse; ApplyInputMode(); }
@@ -64,6 +78,7 @@ void AHSPlayerController::InspectItem(UHSItemData* Item)
         C->GetMesh()->SetOwnerNoSee(true);
     }
     InspectionItem=Item; bInspecting=true;
+    LastNumberSlot=INDEX_NONE;
     bOwnsPause=!UGameplayStatics::IsGamePaused(this) && UGameplayStatics::SetGamePaused(this,true);
     if(Item->InspectSound) UGameplayStatics::PlaySound2D(this,Item->InspectSound,.5f,1.f,0.f,nullptr,nullptr,true);
     ApplyInputMode();

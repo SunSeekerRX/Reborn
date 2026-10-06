@@ -1,13 +1,11 @@
-# RoomA 玩法测试验证（0.6.3，2026-10-06）
+# 光照及桌面交互验证（0.8.3，2026-10-06）
 
-当前仅开放 Basic_roomA。A 的跨房间出口暂时关闭，B、C 和组合场景保留供后续实装。
+8 项 UE 引擎测试通过，0 失败：LightingTableInteraction、FurnitureFacing、Basic.Interactions、RoomAMovement、FinalEscape、PickupDoubleNumber、Inspection3D、SafeWhiteTravel。报告、实际渲染截图和配置保留于仓库外 ../LocalArtifacts/Cleanup_20261006_195326/Deliverables/Verification/LightingInteraction。
 
-本轮 11 项场景自动化检查全部通过，0 失败。实测实际输入移动、跑步、Ctrl 慢走/蹲走、安全屋与大厅通路、计时空气墙、超时重载回滚、3D 检视及暂停恢复、书架倒塌碰撞、挂画交换独占高亮、美术骨架与音频播放、怪物追逐接触扣命和僵直。关键交互和运镜另有前一轮重复验证，并检查实际渲染截图。
+四场景 14 个拾取物/记录已定位于现有桌面。逐物体模型底面距射线求得的实际桌面 0.3 cm，保持 Actor、组件、阶段、线索与倒塌关联。引擎运行时检查了桌面下方碰撞，验证当前阶段钥匙可被准星选中，提示位置按实际网格顶面计算；真实输入模拟将 E 按下、等待输入处理后释放，确认物品入栏并移除提示。
 
-开场运镜绕开 Cargo rack4，镜头去程和回程全程以球体扫掠检查；能到达窗边看到怪物，结束后恢复第一人称操作。修复了检视时自身模型遮挡，以及静态测试人偶穿在倒塌书架中的显示。
+检查玩家较暗点光和聚光强度，以及怪物红光的颜色、强度及根组件绑定。实际渲染确认较暗桌面可辨认、E 显示在物品上方、怪物周围出现红光；已隐藏禁用的旧出口光块。
 
-RebornEditor Development 编译和 Windows Shipping 打包成功，打包程序实际启动 30 秒后仍存活、响应正常。
+原有交互、3D 检视、挂画交换、新书架检视关闭后倒塌、三处书架倒塌后完整逃离、WASD/Shift/Ctrl 移动和五次安全屋传送继续通过。逃离通路测试关闭怪物伤害，专门验证家具碰撞。实际 Slate 控件事件测试未模拟操作系统物理鼠标点击。临时拾取测试对象赋值前的 ItemData 警告保留在汇总。
 
-详细报告：Deliverables/Verification/RoomAReview/VerificationSummary.json。玩法范围与后续启用出口步骤见 RoomAPreview.md。当前 11 项是 RoomA 验证，历史多房间路线测试不计入本轮结果。
-
-现有家具和屠夫美术、背景录音及脚步资源已验证。倒塌、换画、落地专用音效无提供素材，配置插槽仍保留为空。
+Development 编译、Windows Shipping 打包与打包程序 30 秒启动响应检查通过。此前版本记录保留于同一仓库外目录的 Deliverables/Verification/NewRoomArt、InteractionArt、TitleRecovery。

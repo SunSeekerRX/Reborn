@@ -6,6 +6,7 @@
 #include "HSWorldState.h"
 #include "Engine/GameInstance.h"
 #include "Components/AudioComponent.h"
+#include "Components/PointLightComponent.h"
 #include "Sound/SoundAttenuation.h"
 #include "HSPolicy.h"
 #include "BehaviorTree/BehaviorTree.h"
@@ -27,6 +28,11 @@
 AHSMonster::AHSMonster()
 {
     PrimaryActorTick.bCanEverTick=true;
+    RedAuraLight=CreateDefaultSubobject<UPointLightComponent>(TEXT("MonsterRedAura"));RedAuraLight->SetupAttachment(RootComponent);
+    RedAuraLight->SetRelativeLocation(FVector(45,0,35));RedAuraLight->SetMobility(EComponentMobility::Movable);
+    RedAuraLight->SetIntensityUnits(ELightUnits::Lumens);RedAuraLight->SetIntensity(65.f);RedAuraLight->SetAttenuationRadius(280.f);
+    RedAuraLight->SetLightColor(FLinearColor(1.f,.025f,.01f));RedAuraLight->CastShadows=false;RedAuraLight->SourceRadius=20.f;
+    RedAuraLight->VolumetricScatteringIntensity=.05f;
     PresenceAudio=CreateDefaultSubobject<UAudioComponent>(TEXT("MonsterPresence")); PresenceAudio->SetupAttachment(RootComponent);
     PresenceAudio->bAutoActivate=false; PresenceAudio->bOverrideAttenuation=true;
     PresenceAudio->AttenuationOverrides.bAttenuate=true;
@@ -45,6 +51,8 @@ AHSMonster::AHSMonster()
 void AHSMonster::BeginPlay()
 {
     Super::BeginPlay();
+    RedAuraLight->SetIntensity(GetDefault<UHSSettings>()->MonsterRedLightIntensity);
+    RedAuraLight->SetAttenuationRadius(GetDefault<UHSSettings>()->MonsterRedLightRadius);
     GetCapsuleComponent()->OnComponentHit.AddDynamic(this,&AHSMonster::OnCapsuleHit);
     if(!FootstepSound) FootstepSound=GetDefault<UHSSettings>()->MonsterFootstepSound.LoadSynchronous();
     PresenceAudio->SetSound(PresenceSound); PresenceAudio->SetVolumeMultiplier(.22f); PresenceAudio->Play();

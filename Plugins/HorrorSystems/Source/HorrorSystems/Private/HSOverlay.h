@@ -18,7 +18,10 @@ private:
     TWeakObjectPtr<AHSPlayerController> Controller;
     int32 HoveredSlot=INDEX_NONE;
     FVector2D TooltipPosition;
+    FVector2D InteractionPromptPosition;
+    bool bInteractionPromptVisible=false;
     TSharedPtr<SHSInspectionView> InspectionView;
+    FSlateBrush MobiusBrush;
     UHSItemData* HoverItem() const;
     FText CompassText() const;
     FText CountdownText() const;

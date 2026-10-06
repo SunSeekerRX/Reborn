@@ -69,6 +69,7 @@ def match(label):
 
 def fitted_mesh(actor,component,group):
     old=component.static_mesh
+    if eal.get_metadata_tag(old,'RebornFurnitureFacing')=='3':return old
     if old.get_path_name().startswith(root+'/Art/Fitted/'):return old
     source=sources[group]
     center,extent=actor.get_actor_bounds(False)
@@ -89,7 +90,7 @@ def fitted_mesh(actor,component,group):
     _,outcome=u.GeometryScript_AssetUtils.copy_mesh_from_static_mesh(source,dm,u.GeometryScriptCopyMeshFromAssetOptions(),u.GeometryScriptMeshReadLOD())
     assert outcome==u.GeometryScriptOutcomePins.SUCCESS
     u.GeometryScript_MeshTransforms.transform_mesh(dm,u.Transform(location=-origin))
-    u.GeometryScript_MeshTransforms.transform_mesh(dm,u.Transform(rotation=u.Rotator(0,yaw,0)))
+    u.GeometryScript_MeshTransforms.transform_mesh(dm,u.Transform(rotation=u.Rotator(yaw=yaw)))
     rotated=u.Vector(source_extent.y,source_extent.x,source_extent.z) if yaw%180 else source_extent
     scale=u.Vector(extent.x/max(.001,rotated.x),extent.y/max(.001,rotated.y),extent.z/max(.001,rotated.z))
     u.GeometryScript_MeshTransforms.transform_mesh(dm,u.Transform(scale=scale))
@@ -138,3 +139,7 @@ for name in ('Basic_roomA','Basic_roomB','Basic_roomC','Basic_roomABC'):
     report.append({'map':name,'replacements':rows})
 (saved/'ArtReplacementReport.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
 u.log('REBORN_ART_INSTALLED')
+# The shared repair pass calibrates each source's true front, preserves mirrored
+# Actor transforms, and restores authored upright locker proportions.
+import runpy
+runpy.run_path(str(Path(__file__).with_name('RepairInteractionArt.py')))

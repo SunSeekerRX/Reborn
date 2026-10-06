@@ -41,6 +41,9 @@ class HORRORSYSTEMS_API AHSPortal : public AActor
 public:
     AHSPortal();
     UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Portal") bool bTravelEnabled=true;
+    UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Portal") bool bRequiresSafeReturn=false;
+    UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Portal") bool bWhiteLightTravel=false;
+    UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Portal") TObjectPtr<class UPointLightComponent> PortalLight;
     virtual void BeginPlay() override;
     virtual void Tick(float Dt) override;
     UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Progression") bool bUseStageRoute=false;

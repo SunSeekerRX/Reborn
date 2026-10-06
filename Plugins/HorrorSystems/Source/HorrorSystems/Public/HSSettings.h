@@ -44,7 +44,10 @@ public:
     UPROPERTY(Config, EditAnywhere, Category="Vision", meta=(ClampMin="200")) float ClearRadius=500.f;
     UPROPERTY(Config, EditAnywhere, Category="Vision", meta=(ClampMin="300")) float HiddenRadius=1600.f;
     UPROPERTY(Config, EditAnywhere, Category="Vision", meta=(ClampMin="0.001", ClampMax="1")) float FogDensity=.08f;
-    UPROPERTY(Config, EditAnywhere, Category="Vision", meta=(ClampMin="100")) float FlashlightRange=1400.f;
-    UPROPERTY(Config, EditAnywhere, Category="Vision", meta=(ClampMin="100")) float PlayerLightRadius=450.f;
-    UPROPERTY(Config, EditAnywhere, Category="Vision", meta=(ClampMin="1",Units="lm")) float PlayerLightIntensity=900.f;
+    UPROPERTY(Config, EditAnywhere, Category="Vision", meta=(ClampMin="100")) float FlashlightRange=800.f;
+    UPROPERTY(Config, EditAnywhere, Category="Vision", meta=(ClampMin="100")) float PlayerLightRadius=330.f;
+    UPROPERTY(Config, EditAnywhere, Category="Vision", meta=(ClampMin="1",Units="lm")) float PlayerLightIntensity=180.f;
+    UPROPERTY(Config, EditAnywhere, Category="Vision", meta=(ClampMin="0")) float FlashlightIntensity=180.f;
+    UPROPERTY(Config, EditAnywhere, Category="Vision", meta=(ClampMin="0",Units="lm")) float MonsterRedLightIntensity=65.f;
+    UPROPERTY(Config, EditAnywhere, Category="Vision", meta=(ClampMin="100")) float MonsterRedLightRadius=280.f;
 };

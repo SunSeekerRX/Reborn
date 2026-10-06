@@ -2,8 +2,155 @@
 #include "HSPolicy.h"
 #include "HSProgression.h"
 #include "Engine/GameInstance.h"
+#include "Engine/GameViewportClient.h"
+#include "HSCharacter.h"
+#include "HSPlayerController.h"
+#include "HSRoomActors.h"
+#include "GameFramework/PlayerStart.h"
+#include "EngineUtils.h"
+#include "Kismet/GameplayStatics.h"
+#include "UObject/UObjectGlobals.h"
+#include "Widgets/Layout/SBorder.h"
+#include "Styling/CoreStyle.h"
+#include "MoviePlayer.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Components/BoxComponent.h"
+#include "HSSceneInteractions.h"
 
 UHSWorldState::UHSWorldState() { Slots.SetNum(HSPolicy::Capacity); }
+void UHSWorldState::Initialize(FSubsystemCollectionBase& Collection)
+{
+    Super::Initialize(Collection);
+    TravelTicker=FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateUObject(this,&UHSWorldState::TickWhiteTravel));
+    LoadedMapHandle=FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this,&UHSWorldState::OnTravelMapLoaded);
+}
+void UHSWorldState::Deinitialize()
+{
+    FTSTicker::GetCoreTicker().RemoveTicker(TravelTicker);
+    FCoreUObjectDelegates::PostLoadMapWithWorld.Remove(LoadedMapHandle);
+    if(TravelOverlay.IsValid() && GetGameInstance()->GetGameViewportClient()) GetGameInstance()->GetGameViewportClient()->RemoveViewportWidgetContent(TravelOverlay.ToSharedRef());
+    TravelOverlay.Reset();Super::Deinitialize();
+}
+void UHSWorldState::AttachTravelOverlay()
+{
+    if(TravelOverlay.IsValid() || !GetGameInstance()->GetGameViewportClient()) return;
+    TravelOverlay=SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush"))
+        .BorderBackgroundColor_Lambda([this]{return FLinearColor(1,1,1,WhiteTravelAlpha);})
+        .Visibility_Lambda([this]{return bWhiteTransition?EVisibility::HitTestInvisible:EVisibility::Collapsed;});
+    GetGameInstance()->GetGameViewportClient()->AddViewportWidgetContent(TravelOverlay.ToSharedRef(),1000);
+}
+bool UHSWorldState::BeginWhiteTravel(const FHSRoomRoute& Route,FName SpawnTag,bool bLocal,FName LocalRoom)
+{
+    auto* Progress=GetGameInstance()->GetSubsystem<UHSProgression>();
+    auto* PC=Cast<AHSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(),0));
+    if(bWhiteTransition || bTravelPending || !PC || !Progress->CanExit(Route)) return false;
+    PendingRoute=Route;PendingSpawnTag=SpawnTag;PendingLocalRoom=LocalRoom;bPendingLocal=bLocal;bPendingMenu=false;
+    bTravelPending=true;bWhiteTransition=true;WhiteTravelAlpha=0;TravelPhase=1;TravelHold=0;
+    PC->CloseInspection();PC->SetGameplayLocked(true);AttachTravelOverlay();return true;
+}
+bool UHSWorldState::BeginMenuTravel(bool bStartGame)
+{
+    auto* PC=Cast<AHSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(),0));
+    if(!PC || bWhiteTransition || (bStartGame && !bTitleScreen)) return false;
+    if(bStartGame) ResetSession();
+    PendingRoute=FHSRoomRoute();PendingRoute.Destination=TSoftObjectPtr<UWorld>(FSoftObjectPath(bStartGame?TEXT("/HorrorSystems/Maps/Basic_roomA.Basic_roomA"):TEXT("/HorrorSystems/Maps/RebornTitle.RebornTitle")));
+    PendingSpawnTag=bStartGame?FName(TEXT("Safe_A")):NAME_None;bPendingLocal=false;bPendingMenu=true;
+    PC->CloseInspection();PC->SetGameplayLocked(true);
+    bTravelPending=true;bWhiteTransition=true;WhiteTravelAlpha=0;TravelPhase=1;TravelHold=0;AttachTravelOverlay();return true;
+}
+bool UHSWorldState::IsInSafety(const AHSCharacter* Player) const
+{
+    if(!Player) return false;
+    if(const auto* Room=AHSRoomDirector::Find(GetWorld());Room && Room->IsSafe(Player)) return true;
+    for(TActorIterator<AHSRecoveryCheckpoint> It(GetWorld());It;++It) if(It->SafeArea->Bounds.GetBox().IsInsideOrOn(Player->GetActorLocation())) return true;
+    return false;
+}
+bool UHSWorldState::RecoverAtSafety()
+{
+    auto* PC=Cast<AHSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(),0));
+    auto* Player=PC?Cast<AHSCharacter>(PC->GetPawn()):nullptr;
+    auto* Room=AHSRoomDirector::Find(GetWorld());
+    if(!Player || !Room || !bHasRecovery || bWhiteTransition) return false;
+    Player->CancelAutoInspection();PC->CloseInspection();Lives=3;
+    Player->GetCharacterMovement()->StopMovementImmediately();Player->ClearMovementModifiers();Player->UnCrouch();
+    Player->LaunchCharacter(FVector::ZeroVector,true,true);
+    Player->SetActorTransform(RecoveryTransform,false,nullptr,ETeleportType::TeleportPhysics);
+    PC->SetControlRotation(RecoveryTransform.Rotator());Player->HitProtectionRemaining=6.f;
+    Room->bHasLeftSafeArea=false;Room->bSafeAreaSealed=false;Room->ReturnBarrier->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    Room->Progress()->bTimerRunning=false;bRecoverySafety=false;
+    // A clue already acquired must still authorize the safe return after recovery.
+    Room->bHasLeftSafeArea=true;Room->Tick(0);Room->bHasLeftSafeArea=Room->bSafeTravelReady;
+    bRecoverySafety=true;PC->SetGameplayLocked(false);return true;
+}
+void UHSWorldState::OnTravelMapLoaded(UWorld* World)
+{
+    if(!bWhiteTransition || !World || World->GetGameInstance()!=GetGameInstance()) return;
+    WhiteTravelAlpha=1.f;TravelPhase=3;TravelHold=0.f;
+    // The session owns this widget, so controller destruction cannot remove the cover.
+    if(auto* Viewport=GetGameInstance()->GetGameViewportClient();Viewport && TravelOverlay.IsValid())
+    {Viewport->RemoveViewportWidgetContent(TravelOverlay.ToSharedRef());Viewport->AddViewportWidgetContent(TravelOverlay.ToSharedRef(),1000);}
+}
+bool UHSWorldState::TickWhiteTravel(float Dt)
+{
+    if(!bWhiteTransition) return true;
+    AttachTravelOverlay();
+    auto* PC=Cast<AHSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(),0));
+    if(TravelPhase==1)
+    {
+        WhiteTravelAlpha=FMath::Min(1.f,WhiteTravelAlpha+Dt/.18f);
+        if(WhiteTravelAlpha>=1.f) {TravelPhase=2;TravelHold=0.f;}
+    }
+    else if(TravelPhase==2)
+    {
+        // Keep an opaque frame on screen before triggering a synchronous map load.
+        TravelHold+=Dt;if(TravelHold<.12f) return true;
+        auto* Progress=GetGameInstance()->GetSubsystem<UHSProgression>();
+        if(bPendingLocal)
+        {
+            APlayerStart* Start=nullptr;
+            for(TActorIterator<APlayerStart> It(GetWorld());It;++It) if(It->PlayerStartTag==PendingSpawnTag) {Start=*It;break;}
+            auto* Player=PC?Cast<AHSCharacter>(PC->GetPawn()):nullptr;
+            if(Start && Player)
+            {
+                Progress->CommitExit(PendingRoute);Player->ClearMovementModifiers();Player->SelectedPainting.Reset();
+                for(TActorIterator<AHSRoomDirector> It(GetWorld());It;++It) if(It->Rules && It->Rules->RoomId==PendingLocalRoom) It->PrepareEntry();
+                Player->SetActorLocationAndRotation(Start->GetActorLocation(),Start->GetActorRotation());PC->SetControlRotation(Start->GetActorRotation());
+                TravelPhase=3;TravelHold=0;bTravelPending=false;PendingSpawnTag=NAME_None;
+            }
+            else {TravelPhase=4;bTravelPending=false;PendingSpawnTag=NAME_None;}
+        }
+        else
+        {
+            UWorld* Destination=PendingRoute.Destination.LoadSynchronous();
+            if(!Destination) {TravelPhase=4;bTravelPending=false;PendingSpawnTag=NAME_None;return true;}
+            if(IsMoviePlayerEnabled())
+            {
+                FLoadingScreenAttributes Screen;Screen.MinimumLoadingScreenDisplayTime=.15f;Screen.bAutoCompleteWhenLoadingCompletes=true;Screen.bMoviesAreSkippable=false;
+                Screen.WidgetLoadingScreen=SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor::White);
+                GetMoviePlayer()->SetupLoadingScreen(Screen);
+            }
+            if(!bPendingMenu) Progress->CommitExit(PendingRoute);TravelPhase=5;
+            UGameplayStatics::OpenLevelBySoftObjectPtr(this,PendingRoute.Destination);
+        }
+    }
+    else if(TravelPhase==3)
+    {
+        auto* Room=AHSRoomDirector::Find(GetWorld());
+        if(PC) PC->SetGameplayLocked(true);
+        if(PC && (bTitleScreen || (PC->GetPawn() && Room && Room->Rules && Room->Progress()->ActiveRoom==Room->Rules->RoomId)))
+        {TravelHold+=Dt;if(TravelHold>.35f) TravelPhase=4;}
+    }
+    else if(TravelPhase==4)
+    {
+        WhiteTravelAlpha=FMath::Max(0.f,WhiteTravelAlpha-Dt/.45f);
+        if(WhiteTravelAlpha<=0)
+        {
+            TravelPhase=0;bWhiteTransition=false;bTravelPending=false;PendingSpawnTag=NAME_None;
+            if(PC) {const auto* Progress=GetGameInstance()->GetSubsystem<UHSProgression>();PC->SetGameplayLocked(bTitleScreen || Progress->bCinematic || Progress->bCompleted || IsDefeated());}
+        }
+    }
+    return true;
+}
 bool UHSWorldState::LoseLife()
 {
     if(Lives<=0) return false;
@@ -47,7 +194,8 @@ UHSItemData* UHSWorldState::GetSelectedItem() const
 { return Slots.IsValidIndex(SelectedSlot) ? Slots[SelectedSlot].Item.Get() : nullptr; }
 void UHSWorldState::ResetSession()
 {
-    Lives=3;
+    bWhiteTransition=false;WhiteTravelAlpha=0;TravelPhase=0;
+    Lives=3;bHasRecovery=false;bRecoverySafety=false;
     Slots.Empty(); Slots.SetNum(HSPolicy::Capacity); SelectedSlot=0;
     CollectedPickups.Empty(); PendingSpawnTag=NAME_None; bTravelPending=false;
     if(GetGameInstance()) if(auto* Progress=GetGameInstance()->GetSubsystem<UHSProgression>()) Progress->ResetProgression();
