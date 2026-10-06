@@ -1,18 +1,35 @@
+# Unreal-generated build products and local caches.
 Binaries/
 Intermediate/
 Saved/
 DerivedDataCache/
 .vs/
-*.sln
-Plugins/*/Binaries/
-Plugins/*/Intermediate/
-
-# Keep packaged runtime binaries, exclude debug symbols.
-!Deliverables/**/Binaries/
-!Deliverables/**/Binaries/**
-!Archive/**/Binaries/
-!Archive/**/Binaries/**
-*.pdb
-*.blend1
+.idea/
 __pycache__/
 *.pyc
+*.pyo
+*.sln
+*.suo
+*.user
+*.VC.db
+*.VC.VC.opendb
+*.pdb
+*.obj
+*.ilk
+*.tmp
+*.temp
+*.blend1
+*.blend2
+
+# Local distribution packages, reports, and previous prototype archives.
+/Deliverables/
+/Portable/
+/Archive/
+/LocalArtifacts/
+Build/**/FileOpenOrder/
+Build/**/ShaderCache/
+
+# Keep UE project/configuration, Source, Plugins, Content, ArtSource and Docs.
+
+# These OBJ files are authored geometry sources, not compiler object files.
+!Plugins/HorrorSystems/Tools/InspectionMeshSource/*.obj
