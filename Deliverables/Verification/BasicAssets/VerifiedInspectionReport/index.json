@@ -1,0 +1,44 @@
+﻿{
+	"devices": [
+		{
+			"deviceName": "DESKTOP-3ORPM6E",
+			"instance": "24D26C8A4FE508F7DD8B54B38DBB3A30",
+			"instanceName": "DESKTOP-3ORPM6E-41264",
+			"platform": "WindowsEditor",
+			"oSVersion": "Windows 11 (24H2) [10.0.26100.6899] ",
+			"model": "Default",
+			"gPU": "NVIDIA GeForce RTX 5060 Ti",
+			"cPUModel": "Intel(R) Core(TM) i5-14600KF",
+			"rAMInGB": 32,
+			"renderMode": "SM6",
+			"rHI": "",
+			"appInstanceLog": ""
+		}
+	],
+	"reportCreatedOn": "2026.10.05-13.13.26",
+	"succeeded": 1,
+	"succeededWithWarnings": 0,
+	"failed": 0,
+	"notRun": 0,
+	"inProcess": 0,
+	"totalDuration": 0.13609759509563446,
+	"comparisonExported": false,
+	"comparisonExportDirectory": "",
+	"tests": [
+		{
+			"testDisplayName": "Inspection3D",
+			"fullTestPath": "HorrorSystems.UI.Inspection3D",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"24D26C8A4FE508F7DD8B54B38DBB3A30"
+			],
+			"duration": 0.13609759509563446,
+			"dateTime": "2026.10.05-13.13.26",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		}
+	]
+}

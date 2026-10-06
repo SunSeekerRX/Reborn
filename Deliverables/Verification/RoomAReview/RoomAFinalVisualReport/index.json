@@ -1,0 +1,196 @@
+﻿{
+	"devices": [
+		{
+			"deviceName": "DESKTOP-3ORPM6E",
+			"instance": "6549E0E346988FFAF457C4A4AC9BCE20",
+			"instanceName": "DESKTOP-3ORPM6E-3344",
+			"platform": "WindowsEditor",
+			"oSVersion": "Windows 11 (24H2) [10.0.26100.6899] ",
+			"model": "Default",
+			"gPU": "NVIDIA GeForce RTX 5060 Ti",
+			"cPUModel": "Intel(R) Core(TM) i5-14600KF",
+			"rAMInGB": 32,
+			"renderMode": "D3D12_SM5",
+			"rHI": "D3D12 (SM5)",
+			"appInstanceLog": ""
+		}
+	],
+	"reportCreatedOn": "2026.10.05-18.16.14",
+	"succeeded": 3,
+	"succeededWithWarnings": 0,
+	"failed": 0,
+	"notRun": 0,
+	"inProcess": 0,
+	"totalDuration": 9.3329229354858398,
+	"comparisonExported": false,
+	"comparisonExportDirectory": "",
+	"tests": [
+		{
+			"testDisplayName": "ImportedArt",
+			"fullTestPath": "HorrorSystems.Basic.ImportedArt",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"6549E0E346988FFAF457C4A4AC9BCE20"
+			],
+			"duration": 0.0048456005752086639,
+			"dateTime": "2026.10.05-18.16.05",
+			"entries": [
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Butcher material 0: M_Butcher_0",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-18.16.05"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Butcher material 1: M_Butcher_1",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-18.16.05"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Butcher material 2: M_Butcher_2",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-18.16.05"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Butcher material 3: M_Butcher_3",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-18.16.05"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Butcher material 4: M_Butcher_4",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-18.16.05"
+				}
+			],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "Interactions",
+			"fullTestPath": "HorrorSystems.Basic.Interactions",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"6549E0E346988FFAF457C4A4AC9BCE20"
+			],
+			"duration": 9.1882667541503906,
+			"dateTime": "2026.10.05-18.16.05",
+			"entries": [
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Window camera=X=-70.000 Y=850.000 Z=270.000 target=X=170.000 Y=850.000 Z=192.000 sightHit=None",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-18.16.08"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Focus target=HSInspectTrigger_0 actual=HSInspectTrigger_0 hit=HSInspectTrigger_0 player=X=-760.000 Y=1070.000 Z=198.000 view=X=-748.000 Y=1070.000 Z=266.000 targetcenter=X=-930.000 Y=1070.000 Z=220.000",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-18.16.08"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Book sweep hit=HSCollapsingObstacle_0 center=X=-830.000 Y=800.000 Z=160.000 extent=X=150.000 Y=200.000 Z=60.000 profile=BlockAllDynamic",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-18.16.12"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Focus target=HSSwapPainting_0 actual=HSSwapPainting_0 hit=HSSwapPainting_0 player=X=-925.000 Y=200.000 Z=198.000 view=X=-935.303 Y=193.849 Z=266.000 targetcenter=X=-1095.000 Y=200.000 Z=350.000",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-18.16.13"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Focus target=HSSwapPainting_1 actual=HSSwapPainting_1 hit=HSSwapPainting_1 player=X=-925.000 Y=340.000 Z=198.000 view=X=-936.991 Y=340.462 Z=266.000 targetcenter=X=-1095.000 Y=340.000 Z=350.000",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-18.16.13"
+				}
+			],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "Inspection3D",
+			"fullTestPath": "HorrorSystems.UI.Inspection3D",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"6549E0E346988FFAF457C4A4AC9BCE20"
+			],
+			"duration": 0.13981039822101593,
+			"dateTime": "2026.10.05-18.16.14",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		}
+	]
+}

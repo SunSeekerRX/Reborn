@@ -1,0 +1,50 @@
+Using bundled DotNet SDK version: 10.0 win-x64
+Running UnrealBuildTool: dotnet "..\..\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.dll" RebornEditor Win64 Development "-Project=C:\Projects\Game Design Projects\Reborn\Reborn\Reborn.uproject" -WaitMutex -NoHotReloadFromIDE
+Log file: C:\Users\Admin\AppData\Local\UnrealBuildTool\Log.txt
+Running from a path with a long directory name ("C:\Datas\Workshops\GameDesignWorkshops\UnrealEngine\UE_5.8" = 58 characters). Root paths shorter than 50 characters are recommended to avoid exceeding maximum path lengths on Windows.
+Determining max actions to execute in parallel (14 physical cores, 20 logical cores)
+  Executing up to 14 processes, one per physical core
+Using 'git status' to determine working set for adaptive non-unity build (C:\Projects\Game Design Projects\Reborn\Reborn).
+UbaServer - Listening on 0.0.0.0:1345
+UHT compiled-in object format Default
+Building RebornEditor...
+===== Toolchain Information =====
+Using ISPC compiler (C:\Datas\Workshops\GameDesignWorkshops\UnrealEngine\UE_5.8\Engine\Source\ThirdParty\Intel\ISPC\bin\Windows\ispc.exe)
+  Intel(r) Implicit SPMD Program Compiler (Intel(r) ISPC), 1.24.0 (build commit  @ 20250404, LLVM 18.1.2) 
+Using Visual Studio 14.44.35228 toolchain (C:\Workshops\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207) and Windows 10.0.26100.0 SDK (C:\Program Files (x86)\Windows Kits\10).
+[Adaptive Build] Excluded from HorrorSystems unity file: HSAI.cpp, HSCharacter.cpp, HSGameMode.cpp, HSInspectionView.cpp, HSOverlay.cpp, HSPlayerController.cpp, HSRoomActors.cpp, HSSceneInteractions.cpp, HSWorldActors.cpp, HSWorldState.cpp, HSArtTests.cpp, HSBasicInteractionsTests.cpp, HSBasicRoomTests.cpp, HSBasicRoutesTests.cpp, HSFirstRoomPathTests.cpp, HSInspectionTests.cpp, HSMonsterContactTests.cpp, HSProgressionTests.cpp, HSRoomAMovementTests.cpp, HSSafeExitFloorTests.cpp, HSWindowCameraTests.cpp
+=================================
+Using Unreal Build Accelerator local executor to run 22 action(s)
+  CPU 14 physical cores, 20 logical cores
+  Memory 31.77 GB physical, 32.49 GB/43.77 GB committed
+  UBA Storage capacity 40 GB
+[1/22] Compile [x64] HSArtTests.cpp
+[2/22] Compile [x64] HSBasicInteractionsTests.cpp
+[3/22] Compile [x64] HSBasicRoomTests.cpp
+[4/22] Compile [x64] HSBasicRoutesTests.cpp
+[5/22] Compile [x64] HSCharacter.cpp
+[6/22] Compile [x64] HSFirstRoomPathTests.cpp
+[7/22] Compile [x64] HSGameMode.cpp
+[8/22] Compile [x64] HSInspectionTests.cpp
+[9/22] Compile [x64] HSMonsterContactTests.cpp
+[10/22] Compile [x64] HSOverlay.cpp
+[11/22] Compile [x64] HSPlayerController.cpp
+[12/22] Compile [x64] HSProgressionTests.cpp
+[13/22] Compile [x64] HSRoomAMovementTests.cpp
+[14/22] Compile [x64] HSRoomActors.cpp
+[15/22] Compile [x64] HSSafeExitFloorTests.cpp
+[16/22] Compile [x64] HSSceneInteractions.cpp
+[17/22] Compile [x64] HSWindowCameraTests.cpp
+[18/22] Compile [x64] HSWorldActors.cpp
+[19/22] Compile [x64] Module.HorrorSystems.cpp
+[20/22] Link [x64] UnrealEditor-HorrorSystems.lib
+  正在创建库 C:/Projects/Game Design Projects/Reborn/Reborn/Plugins/HorrorSystems/Intermediate/Build/Win64/x64/UnrealEditor/Development/HorrorSystems/UnrealEditor-HorrorSystems.lib 和对象 C:/Projects/Game Design Projects/Reborn/Reborn/Plugins/HorrorSystems/Intermediate/Build/Win64/x64/UnrealEditor/Development/HorrorSystems/UnrealEditor-HorrorSystems.exp
+[21/22] Link [x64] UnrealEditor-HorrorSystems.dll
+[22/22] WriteMetadata RebornEditor.target [NoUba]
+
+Total time in Unreal Build Accelerator local executor: 83.42 seconds
+Output binary: C:\Datas\Workshops\GameDesignWorkshops\UnrealEngine\UE_5.8\Engine\Binaries\Win64\UnrealEditor.exe
+
+Result: Succeeded
+Total execution time: 86.09 seconds
+Trace written to file C:\Users\Admin\AppData\Local\UnrealBuildTool\Trace.uba with size 16.4kb

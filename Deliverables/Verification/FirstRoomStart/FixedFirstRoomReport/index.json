@@ -1,0 +1,328 @@
+﻿{
+	"devices": [
+		{
+			"deviceName": "DESKTOP-3ORPM6E",
+			"instance": "B2C5770041617CCBA114CAB079883019",
+			"instanceName": "DESKTOP-3ORPM6E-24856",
+			"platform": "WindowsEditor",
+			"oSVersion": "Windows 11 (24H2) [10.0.26100.6899] ",
+			"model": "Default",
+			"gPU": "NVIDIA GeForce RTX 5060 Ti",
+			"cPUModel": "Intel(R) Core(TM) i5-14600KF",
+			"rAMInGB": 32,
+			"renderMode": "SM6",
+			"rHI": "",
+			"appInstanceLog": ""
+		}
+	],
+	"reportCreatedOn": "2026.10.05-17.48.31",
+	"succeeded": 3,
+	"succeededWithWarnings": 0,
+	"failed": 0,
+	"notRun": 0,
+	"inProcess": 0,
+	"totalDuration": 3.1007204055786133,
+	"comparisonExported": false,
+	"comparisonExportDirectory": "",
+	"tests": [
+		{
+			"testDisplayName": "BasicRoomSafety",
+			"fullTestPath": "HorrorSystems.Progression.BasicRoomSafety",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"B2C5770041617CCBA114CAB079883019"
+			],
+			"duration": 0.0013725012540817261,
+			"dateTime": "2026.10.05-17.48.28",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "FirstRoomPath",
+			"fullTestPath": "HorrorSystems.Progression.FirstRoomPath",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"B2C5770041617CCBA114CAB079883019"
+			],
+			"duration": 3.0982499122619629,
+			"dateTime": "2026.10.05-17.48.28",
+			"entries": [
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "First-room main area reached by walking: X=-700.106 Y=300.093 Z=194.150",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-17.48.31"
+				}
+			],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "SafeExitFloor",
+			"fullTestPath": "HorrorSystems.Progression.SafeExitFloor",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"B2C5770041617CCBA114CAB079883019"
+			],
+			"duration": 0.001097802072763443,
+			"dateTime": "2026.10.05-17.48.31",
+			"entries": [
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Exit floor y=-1000.0 hit=1 z=200.0 actor=StaticMeshActor_5",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-17.48.31"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Exit floor y=-950.0 hit=1 z=200.0 actor=StaticMeshActor_5",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-17.48.31"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Exit floor y=-900.0 hit=1 z=200.0 actor=StaticMeshActor_5",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-17.48.31"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Exit floor y=-850.0 hit=1 z=200.0 actor=StaticMeshActor_5",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-17.48.31"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Exit floor y=-800.0 hit=1 z=200.0 actor=StaticMeshActor_5",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-17.48.31"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Exit floor y=-750.0 hit=1 z=200.0 actor=StaticMeshActor_5",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-17.48.31"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Exit floor y=-700.0 hit=1 z=200.0 actor=StaticMeshActor_5",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-17.48.31"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Exit floor y=-650.0 hit=1 z=200.0 actor=StaticMeshActor_5",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-17.48.31"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Exit floor y=-600.0 hit=1 z=200.0 actor=StaticMeshActor_5",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-17.48.31"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Exit floor y=-550.0 hit=1 z=200.0 actor=StaticMeshActor_5",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-17.48.31"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Exit floor y=-500.0 hit=1 z=200.0 actor=StaticMeshActor_5",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-17.48.31"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Exit floor y=-450.0 hit=1 z=200.0 actor=StaticMeshActor_5",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-17.48.31"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Exit floor y=-400.0 hit=1 z=200.0 actor=StaticMeshActor_5",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-17.48.31"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Exit floor y=-350.0 hit=1 z=200.0 actor=StaticMeshActor_5",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-17.48.31"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Exit floor y=-300.0 hit=1 z=200.0 actor=StaticMeshActor_5",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-17.48.31"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Exit floor y=-250.0 hit=1 z=200.0 actor=StaticMeshActor_5",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-17.48.31"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Exit floor y=-200.0 hit=1 z=180.0 actor=StaticMeshActor_5",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-17.48.31"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Exit floor y=-150.0 hit=1 z=160.0 actor=StaticMeshActor_5",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-17.48.31"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Exit floor y=-100.0 hit=1 z=140.0 actor=StaticMeshActor_5",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-17.48.31"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Actual walk reached X=-700.106 Y=300.093 Z=194.150 minimum z=194.2",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-17.48.31"
+				}
+			],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		}
+	]
+}

@@ -1,0 +1,69 @@
+﻿{
+	"devices": [
+		{
+			"deviceName": "DESKTOP-3ORPM6E",
+			"instance": "7910D2F04419BB765DBBE29BC94DADA1",
+			"instanceName": "DESKTOP-3ORPM6E-43848",
+			"platform": "WindowsEditor",
+			"oSVersion": "Windows 11 (24H2) [10.0.26100.6899] ",
+			"model": "Default",
+			"gPU": "NVIDIA GeForce RTX 5060 Ti",
+			"cPUModel": "Intel(R) Core(TM) i5-14600KF",
+			"rAMInGB": 32,
+			"renderMode": "D3D12_SM5",
+			"rHI": "D3D12 (SM5)",
+			"appInstanceLog": ""
+		}
+	],
+	"reportCreatedOn": "2026.10.05-18.18.13",
+	"succeeded": 1,
+	"succeededWithWarnings": 0,
+	"failed": 0,
+	"notRun": 0,
+	"inProcess": 0,
+	"totalDuration": 9.0069761276245117,
+	"comparisonExported": false,
+	"comparisonExportDirectory": "",
+	"tests": [
+		{
+			"testDisplayName": "WindowCamera",
+			"fullTestPath": "HorrorSystems.Basic.WindowCamera",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"7910D2F04419BB765DBBE29BC94DADA1"
+			],
+			"duration": 9.0069761276245117,
+			"dateTime": "2026.10.05-18.18.04",
+			"entries": [
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Intro begins at X=-188.000 Y=-1020.000 Z=362.150; destination X=-70.000 Y=850.000 Z=270.000",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-18.18.04"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Camera path checked over 3414 frames",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-18.18.13"
+				}
+			],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		}
+	]
+}

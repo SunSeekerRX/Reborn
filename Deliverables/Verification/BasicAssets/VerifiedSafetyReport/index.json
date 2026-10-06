@@ -1,0 +1,44 @@
+﻿{
+	"devices": [
+		{
+			"deviceName": "DESKTOP-3ORPM6E",
+			"instance": "11786ED6449BA0404F471789DC2750A8",
+			"instanceName": "DESKTOP-3ORPM6E-43396",
+			"platform": "WindowsEditor",
+			"oSVersion": "Windows 11 (24H2) [10.0.26100.6899] ",
+			"model": "Default",
+			"gPU": "NVIDIA GeForce RTX 5060 Ti",
+			"cPUModel": "Intel(R) Core(TM) i5-14600KF",
+			"rAMInGB": 32,
+			"renderMode": "SM6",
+			"rHI": "",
+			"appInstanceLog": ""
+		}
+	],
+	"reportCreatedOn": "2026.10.05-13.13.24",
+	"succeeded": 1,
+	"succeededWithWarnings": 0,
+	"failed": 0,
+	"notRun": 0,
+	"inProcess": 0,
+	"totalDuration": 0.001283399760723114,
+	"comparisonExported": false,
+	"comparisonExportDirectory": "",
+	"tests": [
+		{
+			"testDisplayName": "BasicRoomSafety",
+			"fullTestPath": "HorrorSystems.Progression.BasicRoomSafety",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"11786ED6449BA0404F471789DC2750A8"
+			],
+			"duration": 0.001283399760723114,
+			"dateTime": "2026.10.05-13.13.24",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		}
+	]
+}
