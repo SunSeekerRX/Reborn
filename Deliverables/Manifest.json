@@ -1,20 +1,30 @@
 {
   "name": "Reborn",
-  "version": "0.5.0",
+  "version": "0.6.3",
+  "playable_maps": [
+    "Basic_roomA"
+  ],
   "engine": "5.8.2",
-  "tests_passed": 7,
+  "tests_passed": 11,
   "platform": "Win64",
   "configuration": "Shipping",
   "project": {
     "file": "Reborn_Project.zip",
-    "files": 150,
-    "bytes": 55516759,
-    "sha256": "37b6e2917dca50a01be1c010ee6cb4cd150df6b37bea4df114c9ff0476b0b36d"
+    "files": 365,
+    "bytes": 201376882,
+    "sha256": "1749cbacafce608e8e2fdb4ac9e16a9b42b256648865a95a14510514663dbd33"
   },
   "game": {
     "file": "Reborn_Windows.zip",
-    "files": 31,
-    "bytes": 270218573,
-    "sha256": "0cb859b07ff6e2ee7627fd0de28edee54987bda8d05b5eea7f4deeea935f6a4b"
+    "files": 32,
+    "bytes": 300070626,
+    "sha256": "d53a1db15348ca3999a1db53218e74e7682d715a4b2555c299c34a8f76dba76e"
+  },
+  "plugin": {
+    "archive": "HorrorSystems_Source.zip",
+    "engine": "5.8.2",
+    "sha256": "b284e6fdab4351d72f5d0d4d81ba572c789d9750a6e867d4a8c3d8fe61e275e2",
+    "files": 305,
+    "bytes": 99957101
   }
 }

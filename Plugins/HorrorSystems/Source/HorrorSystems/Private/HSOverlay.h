@@ -4,6 +4,7 @@
 #include "Styling/SlateBrush.h"
 class AHSPlayerController;
 class UHSItemData;
+class SHSInspectionView;
 class SHSOverlay : public SCompoundWidget
 {
 public:
@@ -17,8 +18,7 @@ private:
     TWeakObjectPtr<AHSPlayerController> Controller;
     int32 HoveredSlot=INDEX_NONE;
     FVector2D TooltipPosition;
-    FSlateBrush InspectionBrush;
-    UHSItemData* LastInspection=nullptr;
+    TSharedPtr<SHSInspectionView> InspectionView;
     UHSItemData* HoverItem() const;
     FText CompassText() const;
     FText CountdownText() const;

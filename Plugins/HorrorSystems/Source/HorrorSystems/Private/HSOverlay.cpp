@@ -1,4 +1,5 @@
 #include "HSOverlay.h"
+#include "HSInspectionView.h"
 #include "HSPlayerController.h"
 #include "HSWorldState.h"
 #include "HSItemData.h"
@@ -26,6 +27,15 @@ namespace
     const FLinearColor Accent(.68f,.82f,.76f,1.f);
     const FLinearColor Ink(.018f,.025f,.031f,.94f);
     FSlateFontInfo Font(int32 Size) { return FCoreStyle::GetDefaultFontStyle("Regular",Size); }
+    const FProgressBarStyle& HealthBarStyle()
+    {
+        static const FProgressBarStyle Style=[] {
+            FSlateBrush Background=*FCoreStyle::Get().GetBrush("WhiteBrush");
+            Background.TintColor=FLinearColor(.08f,.025f,.03f,1.f);
+            return FProgressBarStyle().SetBackgroundImage(Background).SetFillImage(*FCoreStyle::Get().GetBrush("WhiteBrush"));
+        }();
+        return Style;
+    }
     class FHSSlotDrag : public FDragDropOperation
     {
     public:
@@ -113,8 +123,6 @@ namespace
 void SHSOverlay::Construct(const FArguments& Args)
 {
     Controller=Args._Controller;
-    InspectionBrush.DrawAs=ESlateBrushDrawType::Image;
-    InspectionBrush.ImageSize=FVector2D(560,340);
     TSharedRef<SHorizontalBox> Bar=SNew(SHorizontalBox);
     for(int32 I=0;I<10;++I)
         Bar->AddSlot().AutoWidth().Padding(3,0)[SNew(SHSSlot).Index(I).Controller(Controller).Overlay(SharedThis(this))];
@@ -138,7 +146,12 @@ void SHSOverlay::Construct(const FArguments& Args)
         +SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Center)
         [SNew(STextBlock).Text(FText::FromString(TEXT("·"))).Font(Font(25)).ColorAndOpacity(Accent).Visibility_Lambda([this]{return GameplayVisibility()!=EVisibility::SelfHitTestInvisible || (Controller.IsValid()&&Controller->IsMouseMode())?EVisibility::Hidden:EVisibility::HitTestInvisible;})]
         +SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Bottom).Padding(0,0,0,28)
-        [SNew(SBox).Visibility(this,&SHSOverlay::GameplayVisibility)[Bar]]
+        [SNew(SVerticalBox).Visibility(this,&SHSOverlay::GameplayVisibility)
+            +SVerticalBox::Slot().AutoHeight()[Bar]
+            +SVerticalBox::Slot().AutoHeight().Padding(3,8,3,0)
+            [SNew(SBox).WidthOverride(694).HeightOverride(7)
+                [SNew(SProgressBar).Style(&HealthBarStyle()).Percent_Lambda([this]() -> TOptional<float> { auto* S=Controller.IsValid()?Controller->GetSession():nullptr; return S?S->Lives/3.f:1.f; }).FillColorAndOpacity(FLinearColor(.72f,.16f,.18f,1))]]
+        ]
         +SOverlay::Slot()[SNew(SCanvas).Visibility(EVisibility::SelfHitTestInvisible)
             +SCanvas::Slot().Position_Lambda([this]{return TooltipPosition;}).Size(FVector2D(300,145))
             [SNew(SBorder).Padding(14).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.025f,.035f,.04f,.88f))
@@ -150,21 +163,24 @@ void SHSOverlay::Construct(const FArguments& Args)
             ]
         ]
         +SOverlay::Slot()
-        [SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(0,0,0,.75f)).Padding(28)
+        [SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("NoBrush")).Padding(0)
             .Visibility_Lambda([this]{return Controller.IsValid()&&Controller->IsInspecting()?EVisibility::Visible:EVisibility::Collapsed;})
             .HAlign(HAlign_Center).VAlign(VAlign_Center)
-            [SNew(SBox).WidthOverride(640)
-                [SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(Ink).Padding(24)
-                    [SNew(SVerticalBox)
-                        +SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
-                        [SNew(SBox).WidthOverride(550).HeightOverride(280)
-                            [SNew(SScaleBox).Stretch(EStretch::ScaleToFit)[SNew(SImage).Image(&InspectionBrush)]]]
+            [SNew(SBox).WidthOverride_Lambda([this]{return GetCachedGeometry().GetLocalSize().X*2.f/3.f;})
+                .HeightOverride_Lambda([this]{return GetCachedGeometry().GetLocalSize().Y*2.f/3.f;})
+                [SNew(SVerticalBox)
+                    +SVerticalBox::Slot().FillHeight(1)
+                    [SAssignNew(InspectionView,SHSInspectionView)]
+                    +SVerticalBox::Slot().AutoHeight().Padding(0,12,0,0)
+                    [SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.018f,.025f,.031f,.72f)).Padding(20)
+                        [SNew(SVerticalBox)
                         +SVerticalBox::Slot().AutoHeight().Padding(0,16,0,8)[SNew(STextBlock).Text_Lambda([this]{auto* I=Controller.IsValid()?Controller->GetInspectionItem():nullptr;return I?I->DisplayName:FText::GetEmpty();}).Font(Font(22)).ColorAndOpacity(Accent)]
                         +SVerticalBox::Slot().AutoHeight()[SNew(SBox).MaxDesiredHeight(120)
-                            [SNew(SScrollBox)+SScrollBox::Slot()[SNew(STextBlock).Text_Lambda([this]{auto* I=Controller.IsValid()?Controller->GetInspectionItem():nullptr;return I?I->Description:FText::GetEmpty();}).Font(Font(14)).WrapTextAt(570)]]]
+                            [SNew(SScrollBox)+SScrollBox::Slot()[SNew(STextBlock).Text_Lambda([this]{auto* I=Controller.IsValid()?Controller->GetInspectionItem():nullptr;return I?I->Description:FText::GetEmpty();}).Font(Font(14)).AutoWrapText(true)]]]
                         +SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Right).Padding(0,18,0,0)
                         [SNew(SButton).OnClicked_Lambda([this]{if(Controller.IsValid()) Controller->CloseInspection(); return FReply::Handled();})
                             [SNew(STextBlock).Text(FText::FromString(TEXT("关闭"))).Font(Font(12))]]
+                        ]
                     ]
                 ]
             ]
@@ -182,7 +198,17 @@ void SHSOverlay::Construct(const FArguments& Args)
             [SNew(SVerticalBox).Visibility_Lambda([this]{return EndTime()>1.5f?EVisibility::Visible:EVisibility::Hidden;})
                 +SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[SNew(STextBlock).Text(FText::FromString(TEXT("黎明已至"))).Font(Font(36)).ColorAndOpacity(Accent)]
                 +SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0,18)[SNew(STextBlock).Text(FText::FromString(TEXT("游戏结束"))).Font(Font(18)).ColorAndOpacity(Accent)]
-                +SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[SNew(SButton).OnClicked_Lambda([this]{ if(Controller.IsValid()) { Controller->GetSession()->ResetSession(); UGameplayStatics::OpenLevel(Controller.Get(),TEXT("/HorrorSystems/Maps/Test_A")); } return FReply::Handled(); })[SNew(STextBlock).Text(FText::FromString(TEXT("重新开始"))).Font(Font(16))]]
+                +SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[SNew(SButton).OnClicked_Lambda([this]{ if(Controller.IsValid()) { Controller->GetSession()->ResetSession(); UGameplayStatics::OpenLevel(Controller.Get(),TEXT("/HorrorSystems/Maps/Basic_roomA")); } return FReply::Handled(); })[SNew(STextBlock).Text(FText::FromString(TEXT("重新开始"))).Font(Font(16))]]
+            ]
+        ]
+        +SOverlay::Slot()
+        [SNew(SBorder).Visibility_Lambda([this]{return Controller.IsValid() && Controller->GetSession()->IsDefeated()?EVisibility::Visible:EVisibility::Collapsed;})
+            .BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.015f,.02f,.025f,.94f))
+            .HAlign(HAlign_Center).VAlign(VAlign_Center)
+            [SNew(SVerticalBox)
+                +SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[SNew(STextBlock).Text(FText::FromString(TEXT("游戏结束"))).Font(Font(36)).ColorAndOpacity(Accent)]
+                +SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0,24)
+                [SNew(SButton).OnClicked_Lambda([this]{if(Controller.IsValid()) { const FName Map(*UGameplayStatics::GetCurrentLevelName(Controller.Get(),true)); Controller->GetSession()->ResetSession(); UGameplayStatics::OpenLevel(Controller.Get(),Map); } return FReply::Handled(); })[SNew(STextBlock).Text(FText::FromString(TEXT("重新开始"))).Font(Font(16))]]
             ]
         ]
         +SOverlay::Slot()
@@ -194,7 +220,7 @@ bool SHSOverlay::CinematicPlaying() const
 { auto* D=Controller.IsValid()?AHSRoomDirector::Find(Controller->GetWorld()):nullptr; return D && D->Progress()->bCinematic; }
 float SHSOverlay::EndTime() const
 { auto* D=Controller.IsValid()?AHSRoomDirector::Find(Controller->GetWorld()):nullptr; return D?D->EndingTime:0.f; }
-EVisibility SHSOverlay::GameplayVisibility() const { return CinematicPlaying() || EndTime()>0?EVisibility::Collapsed:EVisibility::SelfHitTestInvisible; }
+EVisibility SHSOverlay::GameplayVisibility() const { return CinematicPlaying() || EndTime()>0 || (Controller.IsValid() && Controller->GetSession()->IsDefeated())?EVisibility::Collapsed:EVisibility::SelfHitTestInvisible; }
 FText SHSOverlay::CountdownText() const
 {
     auto* D=Controller.IsValid()?AHSRoomDirector::Find(Controller->GetWorld()):nullptr;
@@ -223,11 +249,7 @@ void SHSOverlay::Tick(const FGeometry& G,double T,float Dt)
     FVector2D Local=G.AbsoluteToLocal(FSlateApplication::Get().GetCursorPos());
     TooltipPosition=FVector2D(FMath::Clamp(Local.X+18.f,8.f,FMath::Max(8.f,G.GetLocalSize().X-308.f)), FMath::Clamp(Local.Y-155.f,8.f,FMath::Max(8.f,G.GetLocalSize().Y-155.f)));
     UHSItemData* Item=Controller.IsValid()?Controller->GetInspectionItem():nullptr;
-    if(LastInspection!=Item)
-    {
-        LastInspection=Item;
-        InspectionBrush.SetResourceObject(Item?(Item->InspectionImage?Item->InspectionImage.Get():Item->Icon.Get()):nullptr);
-    }
+    if(InspectionView.IsValid()) InspectionView->SetItem(Item);
 }
 FText SHSOverlay::CompassText() const
 {

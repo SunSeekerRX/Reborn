@@ -3,6 +3,7 @@
 #include "HSAnimInstance.h"
 #include "HSSettings.h"
 #include "HSProgression.h"
+#include "HSWorldState.h"
 #include "Engine/GameInstance.h"
 #include "Components/AudioComponent.h"
 #include "Sound/SoundAttenuation.h"
@@ -44,17 +45,25 @@ AHSMonster::AHSMonster()
 void AHSMonster::BeginPlay()
 {
     Super::BeginPlay();
-    if(!FootstepSound) FootstepSound=LoadObject<USoundBase>(nullptr,TEXT("/HorrorSystems/Audio/S_MonsterStep.S_MonsterStep"));
-    if(!PresenceSound) PresenceSound=LoadObject<USoundBase>(nullptr,TEXT("/HorrorSystems/Audio/S_MonsterPresence.S_MonsterPresence"));
+    GetCapsuleComponent()->OnComponentHit.AddDynamic(this,&AHSMonster::OnCapsuleHit);
+    if(!FootstepSound) FootstepSound=GetDefault<UHSSettings>()->MonsterFootstepSound.LoadSynchronous();
     PresenceAudio->SetSound(PresenceSound); PresenceAudio->SetVolumeMultiplier(.22f); PresenceAudio->Play();
-    if(!GetMesh()->GetSkeletalMeshAsset()) GetMesh()->SetSkeletalMesh(LoadObject<USkeletalMesh>(nullptr,TEXT("/HorrorSystems/Characters/Mannequins/Meshes/SKM_Manny_Simple.SKM_Manny_Simple")));
+    auto* Art=GetDefault<UHSSettings>()->MonsterAppearance.LoadSynchronous();
+    if(!GetMesh()->GetSkeletalMeshAsset()) GetMesh()->SetSkeletalMesh(Art?Art:LoadObject<USkeletalMesh>(nullptr,TEXT("/HorrorSystems/Characters/Mannequins/Meshes/SKM_Manny_Simple.SKM_Manny_Simple")));
     if(!GetMesh()->GetAnimClass()) GetMesh()->SetAnimInstanceClass(UHSAnimInstance::StaticClass());
-    if(auto* Material=LoadObject<UMaterialInterface>(nullptr,TEXT("/HorrorSystems/Materials/M_Monster.M_Monster")))
+    if(auto* Material=Art?nullptr:LoadObject<UMaterialInterface>(nullptr,TEXT("/HorrorSystems/Materials/M_Monster.M_Monster")))
         for(int32 I=0;I<GetMesh()->GetNumMaterials();++I) GetMesh()->SetMaterial(I,Material);
 }
 void AHSMonster::Tick(float Dt)
 {
     Super::Tick(Dt);
+    StaggerRemaining=FMath::Max(0.f,StaggerRemaining-Dt);
+    RecoilRemaining=FMath::Max(0.f,RecoilRemaining-Dt);
+    if(!bContactArmed && StaggerRemaining<=0.f)
+    {
+        auto* Player=Cast<AHSCharacter>(UGameplayStatics::GetPlayerPawn(this,0));
+        if(Player && FVector::Dist2D(Player->GetActorLocation(),GetActorLocation())>GetCapsuleComponent()->GetScaledCapsuleRadius()+Player->GetCapsuleComponent()->GetScaledCapsuleRadius()+30.f) bContactArmed=true;
+    }
     const float Speed=GetVelocity().Size2D();
     if(Speed>30)
     {
@@ -65,6 +74,19 @@ void AHSMonster::Tick(float Dt)
     else StepDistance=0;
 }
 AHSPursuitController::AHSPursuitController() { PrimaryActorTick.bCanEverTick=true; }
+void AHSMonster::OnCapsuleHit(UPrimitiveComponent*,AActor* Other,UPrimitiveComponent*,FVector,const FHitResult&)
+{ TryContactPlayer(Cast<AHSCharacter>(Other)); }
+bool AHSMonster::TryContactPlayer(AHSCharacter* Player)
+{
+    if(!bCanDamagePlayer || bCinematicActor || !bContactArmed || StaggerRemaining>0.f || !Player || !Player->ReceiveMonsterContact(this)) return false;
+    bContactArmed=false; StaggerRemaining=StaggerDuration; RecoilRemaining=.25f;
+    if(auto* AI=Cast<AAIController>(GetController())) AI->StopMovement();
+    FVector Away=(GetActorLocation()-Player->GetActorLocation()).GetSafeNormal2D();
+    if(Away.IsNearlyZero()) Away=-Player->GetActorForwardVector();
+    GetCharacterMovement()->MaxWalkSpeed=StaggerSpeed;
+    LaunchCharacter(Away*120.f+FVector(0,0,20),true,true);
+    return true;
+}
 void AHSPursuitController::OnPossess(APawn* InPawn)
 {
     Super::OnPossess(InPawn);
@@ -98,12 +120,13 @@ void AHSPursuitController::Tick(float Dt)
     auto* Monster=Cast<AHSMonster>(GetPawn());
     if(Monster && Monster->bCinematicActor) return;
     const auto* Progress=GetGameInstance()->GetSubsystem<UHSProgression>();
-    if(!Monster || !IsValid(Target) || Monster->bCinematicActor || Progress->bCinematic || Progress->bCompleted || (!Progress->ActiveRoom.IsNone() && !Progress->bTimerRunning)) { StopMovement(); return; }
+    if(!Monster || !IsValid(Target) || GetGameInstance()->GetSubsystem<UHSWorldState>()->IsDefeated() || Monster->bCinematicActor || (!Monster->HomeRoom.IsNone() && Monster->HomeRoom!=Progress->ActiveRoom) || Progress->bCinematic || Progress->bCompleted || (!Progress->ActiveRoom.IsNone() && !Progress->bTimerRunning)) { StopMovement(); return; }
+    if(Monster->RecoilRemaining>0.f) return;
     const auto* S=GetDefault<UHSSettings>();
     const float Distance=FVector::Dist2D(Target->GetActorLocation(),Monster->GetActorLocation());
     Monster->DistanceToPlayer=Distance;
     const float Resume=FMath::Max(S->ResumeRadius,S->StopRadius+20.f);
-    if(Distance<=S->StopRadius || (Monster->PursuitState==EHSPursuitState::Waiting && Distance<Resume))
+    if(!Monster->bCanDamagePlayer && (Distance<=S->StopRadius || (Monster->PursuitState==EHSPursuitState::Waiting && Distance<Resume)))
     {
         Monster->PursuitState=EHSPursuitState::Waiting;
         StopMovement();
@@ -120,7 +143,7 @@ void AHSPursuitController::Tick(float Dt)
         if(Monster->bAutomaticSpeed) Monster->MovementState=Visible || Distance<=S->NearRadius ? EHSMovementState::Slow : Distance>=S->FarRadius ? EHSMovementState::Fast : EHSMovementState::Normal;
         Desired=Monster->MovementState==EHSMovementState::Slow?S->NearSpeed:Monster->MovementState==EHSMovementState::Fast?S->FarSpeed:S->NormalSpeed;
         auto* Move=Monster->GetCharacterMovement();
-        Move->MaxWalkSpeed=FMath::FInterpConstantTo(Move->MaxWalkSpeed,Desired,Dt,650.f);
+        Move->MaxWalkSpeed=Monster->StaggerRemaining>0.f?Monster->StaggerSpeed:FMath::FInterpConstantTo(Move->MaxWalkSpeed,Desired,Dt,650.f);
         Monster->PursuitState=bPathBlocked ? EHSPursuitState::Blocked : Distance>S->FarRadius && !Visible ? EHSPursuitState::CatchUp : EHSPursuitState::Approach;
     }
     if(auto* BB=GetBlackboardComponent())
@@ -141,12 +164,13 @@ void UBTTask_HSPursue::TickTask(UBehaviorTreeComponent& Owner,uint8* Memory,floa
     if(!AI || !IsValid(AI->Target)) return;
     auto* Monster=Cast<AHSMonster>(AI->GetPawn());
     const auto* Progress=AI->GetGameInstance()->GetSubsystem<UHSProgression>();
-    if(!Monster || Monster->bCinematicActor || Monster->PursuitState==EHSPursuitState::Waiting || Progress->bCinematic || Progress->bCompleted || (!Progress->ActiveRoom.IsNone() && !Progress->bTimerRunning)) { AI->StopMovement(); return; }
+    if(Monster && Monster->RecoilRemaining>0.f) return;
+    if(!Monster || AI->GetGameInstance()->GetSubsystem<UHSWorldState>()->IsDefeated() || Monster->bCinematicActor || (!Monster->HomeRoom.IsNone() && Monster->HomeRoom!=Progress->ActiveRoom) || Monster->PursuitState==EHSPursuitState::Waiting || Progress->bCinematic || Progress->bCompleted || (!Progress->ActiveRoom.IsNone() && !Progress->bTimerRunning)) { AI->StopMovement(); return; }
     float& Timer=*reinterpret_cast<float*>(Memory); Timer-=Dt;
     if(Timer>0) return; Timer=.3f;
     FAIMoveRequest Request;
     Request.SetGoalActor(AI->Target);
-    Request.SetAcceptanceRadius(GetDefault<UHSSettings>()->StopRadius);
+    Request.SetAcceptanceRadius(Monster->bCanDamagePlayer?0.f:GetDefault<UHSSettings>()->StopRadius);
     Request.SetReachTestIncludesAgentRadius(false); Request.SetReachTestIncludesGoalRadius(false);
     Request.SetUsePathfinding(true); Request.SetAllowPartialPath(false);
     const auto Result=AI->MoveTo(Request);

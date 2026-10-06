@@ -1,10 +1,10 @@
 # Reborn 恐怖游戏基础系统
 
-适用：UE **5.8.2**，Windows，单机第一人称。系统代码、模板人物资源、测试地图、数据资产和测试音效全部放在这个插件目录。
+适用：UE **5.8.2**，Windows，单机第一人称。系统代码、模板人物资源、Basic 地图、数据资产和已导入素材全部放在这个插件目录。
 
 ## 立即体验
 
-打开 `Reborn.uproject`，启动地图是 `Test_A`，点击编辑器 Play。也可在工程目录运行 `打开编辑器.ps1` 或 `运行测试场景.ps1`。
+打开 `Reborn.uproject`，启动地图是 `Basic_roomA`，点击编辑器 Play。
 
 | 操作 | 效果 |
 | --- | --- |
@@ -33,9 +33,10 @@
 3. 在关卡 World Settings 设置 GameMode Override 为 **HSGameMode**，或继承它制作正式游戏模式。它会使用 HSCharacter 和 HSPlayerController。
 4. 关卡放置 **PlayerStart**；默认 `PlayerStartTag=Default`，传送落点用 `Arrival` 或自定义标签。每张关卡至少放一个 **NavMeshBoundsVolume**，覆盖可行走区域，按 P 检查绿色导航网格。
 5. 放一个 **HSVisionRig** 配置视野和雾；摆放 **HSMonster**、**HSPickup**、**HSPortal** 和 **HSAmbientZone**。复制测试地图中的实例也是可行的。
-6. 若需打包，Project Settings → Packaging → Additional Asset Directories to Cook 添加 `/HorrorSystems`，并把正式地图加入打包地图列表。模板角色/音效通过插件路径读取，必须包含在 Cook 内容中。
+6. 将原工程 Config/DefaultGame.ini 中 [/Script/HorrorSystems.HSSettings] 配置段复制到新工程，保留美术与音频绑定；设置 r.CustomDepth=3 以启用交互轮廓高亮。
+7. 若需打包，Project Settings → Packaging → Additional Asset Directories to Cook 添加 `/HorrorSystems`，并把正式地图加入打包地图列表。模板角色/音效通过插件路径读取，必须包含在 Cook 内容中。
 
-插件资源没有依赖宿主 `/Game` 的运行时路径。测试图位于 `/HorrorSystems/Maps/Test_A`、`Test_B`、`Test_C`。Content Browser 需要勾选 **Show Plugin Content（显示插件内容）**。
+插件资源没有依赖宿主 `/Game` 的运行时路径。测试图位于 `/HorrorSystems/Maps/Basic_roomA`、`Basic_roomB`、`Basic_roomC` 和 `Basic_roomABC`。Content Browser 需要勾选 **Show Plugin Content（显示插件内容）**。
 
 ## 可配置位置
 
@@ -47,7 +48,7 @@ Camera 分组可调默认/最小/最大 FOV、滚轮步长、平滑速度、鼠�
 
 传送门：设置 Destination 关卡软引用、DestinationSpawnTag 和 PortalName。落点应离门触发框至少 2 米，避免落地后马上再次传送。无效目标会拒绝传送，并且不会修改快捷栏。
 
-音效：HSCharacter.FootstepSound、ItemData.PickupSound/InspectSound、HSPortal.TravelSound、HSAmbientZone.Sound/Volume/AudibleRadius。测试音效是合成占位音；正式场景换成自己的 SoundWave 或 SoundCue 即可。环境音资源需要开启 Looping。
+音效：HSCharacter.FootstepSound、ItemData.PickupSound/InspectSound、HSPortal.TravelSound、HSAmbientZone.Sound/Volume/AudibleRadius。已接入提供的录音，未提供的落地、倒塌和换画音效继续留空；正式场景可自行配置 SoundWave 或 SoundCue。环境音资源需要开启 Looping。
 
 角色：HSCharacter 使用 UE Manny 已蒙皮的模板骨骼和 Idle/Walk/Run BlendSpace，沿用原始皮肤权重和四肢骨骼层级。蹲下在组件空间降低骨盆，双腿 Two-Bone IK 保持脚底位置与骨段长度，膝盖朝前弯曲；拾取时右臂 IK 朝实际道具位置伸出，保留手部方向。动画线程使用主线程 PreUpdate 缓存的目标。仍属于程序化测试动作，**不是正式动作捕捉动画**。生产动画蓝图可以使用角色的 `bIsCrouched`、速度、`PickupPoseAlpha`、`PickupTargetLocation`，或响应 `OnItemPickedUp` 播放自己的 Montage。PickupMontage 可配置，但替换 Animation Blueprint 时需提供对应 Slot。
 

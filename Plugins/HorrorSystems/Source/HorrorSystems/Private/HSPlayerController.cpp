@@ -6,6 +6,7 @@
 #include "Engine/GameInstance.h"
 #include "Engine/GameViewportClient.h"
 #include "Components/InputComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Framework/Application/SlateApplication.h"
 #include "Camera/PlayerCameraManager.h"
@@ -56,7 +57,12 @@ void AHSPlayerController::InspectSelected()
 void AHSPlayerController::InspectItem(UHSItemData* Item)
 {
     if(!Item || bInspecting || bGameplayLocked) return;
-    if(auto* C=Cast<AHSCharacter>(GetPawn())) C->CancelAutoInspection();
+    if(auto* C=Cast<AHSCharacter>(GetPawn()))
+    {
+        C->CancelAutoInspection();
+        bInspectionOwnerNoSee=C->GetMesh()->bOwnerNoSee;
+        C->GetMesh()->SetOwnerNoSee(true);
+    }
     InspectionItem=Item; bInspecting=true;
     bOwnsPause=!UGameplayStatics::IsGamePaused(this) && UGameplayStatics::SetGamePaused(this,true);
     if(Item->InspectSound) UGameplayStatics::PlaySound2D(this,Item->InspectSound,.5f,1.f,0.f,nullptr,nullptr,true);
@@ -65,9 +71,11 @@ void AHSPlayerController::InspectItem(UHSItemData* Item)
 void AHSPlayerController::CloseInspection()
 {
     if(!bInspecting) return;
+    auto* ClosedItem=InspectionItem.Get();
     bInspecting=false; InspectionItem=nullptr;
+    if(auto* C=Cast<AHSCharacter>(GetPawn())) C->GetMesh()->SetOwnerNoSee(bInspectionOwnerNoSee);
     if(bOwnsPause) UGameplayStatics::SetGamePaused(this,false);
-    bOwnsPause=false; ApplyInputMode();
+    bOwnsPause=false; ApplyInputMode(); OnInspectionClosed.Broadcast(ClosedItem);
 }
 void AHSPlayerController::Escape() { if(bInspecting) CloseInspection(); else if(bHotbarMouse) { bHotbarMouse=false; ApplyInputMode(); } }
 void AHSPlayerController::SetGameplayLocked(bool Locked) { bGameplayLocked=Locked; if(Locked) bHotbarMouse=false; ApplyInputMode(); }

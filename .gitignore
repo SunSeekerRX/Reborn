@@ -13,3 +13,6 @@ Plugins/*/Intermediate/
 !Archive/**/Binaries/
 !Archive/**/Binaries/**
 *.pdb
+*.blend1
+__pycache__/
+*.pyc

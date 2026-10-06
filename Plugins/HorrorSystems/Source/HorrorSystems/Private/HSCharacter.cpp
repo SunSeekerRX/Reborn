@@ -7,6 +7,11 @@
 #include "HSItemData.h"
 #include "HSPolicy.h"
 #include "HSAnimInstance.h"
+#include "HSAI.h"
+#include "HSProgression.h"
+#include "HSSceneInteractions.h"
+#include "Components/MeshComponent.h"
+#include "Materials/MaterialInterface.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -54,6 +59,24 @@ AHSCharacter::AHSCharacter()
     GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     GetMesh()->VisibilityBasedAnimTickOption=EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
 }
+bool AHSCharacter::ReceiveMonsterContact(AHSMonster* Monster)
+{
+    auto* PC=Cast<AHSPlayerController>(GetController());
+    auto* State=GetGameInstance()->GetSubsystem<UHSWorldState>();
+    auto* Progress=GetGameInstance()->GetSubsystem<UHSProgression>();
+    auto* Room=AHSRoomDirector::Find(GetWorld());
+    if(!Monster || !Monster->bCanDamagePlayer || Monster->bCinematicActor || HitProtectionRemaining>0.f || !PC || PC->IsGameplayLocked() || PC->IsInspecting() || Progress->bCinematic || Progress->bCompleted || (Room && Room->IsSafe(this)) || !State->LoseLife()) return false;
+    HitProtectionRemaining=FMath::Max(5.25f,Monster->StaggerDuration+.25f);
+    FVector Away=(GetActorLocation()-Monster->GetActorLocation()).GetSafeNormal2D();
+    if(Away.IsNearlyZero()) Away=GetActorForwardVector();
+    LaunchCharacter(Away*180.f+FVector(0,0,30),true,true);
+    if(State->IsDefeated())
+    {
+        CancelAutoInspection(); PC->CloseInspection(); PC->SetGameplayLocked(true);
+        PC->bShowMouseCursor=true; PC->SetInputMode(FInputModeGameAndUI());
+    }
+    return true;
+}
 void AHSCharacter::BeginPlay()
 {
     Super::BeginPlay();
@@ -63,7 +86,8 @@ void AHSCharacter::BeginPlay()
     // Full-body first person: keep the animated limbs, remove only neck/head.
     // The camera follows the capsule rather than head animation, preventing head bob.
     GetMesh()->HideBoneByName(TEXT("neck_01"),PBO_None);
-    if(!FootstepSound) FootstepSound=LoadObject<USoundBase>(nullptr,TEXT("/HorrorSystems/Audio/S_Footstep.S_Footstep"));
+    PickupHighlight=LoadObject<UMaterialInterface>(nullptr,TEXT("/HorrorSystems/Materials/M_HighlightPickup.M_HighlightPickup"));
+    PaintingHighlight=LoadObject<UMaterialInterface>(nullptr,TEXT("/HorrorSystems/Materials/M_HighlightPainting.M_HighlightPainting"));
     const auto* Settings=GetDefault<UHSSettings>();
     Flashlight->AttenuationRadius=Settings->FlashlightRange;
     PlayerAuraLight->SetAttenuationRadius(FMath::Clamp(Settings->PlayerLightRadius,100.f,FMath::Max(100.f,Settings->ClearRadius)));
@@ -142,6 +166,7 @@ void AHSCharacter::RefreshSpeed()
 }
 void AHSCharacter::Tick(float Dt)
 {
+    HitProtectionRemaining=FMath::Max(0.f,HitProtectionRemaining-Dt);
     Super::Tick(Dt); RefreshSpeed(); RefreshFocus();
     const auto* Settings=GetDefault<UHSSettings>();
     Camera->FieldOfView=FMath::FInterpTo(Camera->FieldOfView,CameraFOVTarget,Dt,Settings->CameraZoomSpeed);
@@ -171,7 +196,9 @@ void AHSCharacter::Tick(float Dt)
         if(FootstepDistance>(bIsCrouched?110.f:190.f))
         {
             FootstepDistance=0;
-            if(FootstepSound) UGameplayStatics::PlaySoundAtLocation(this,FootstepSound,GetActorLocation(),bIsCrouched?.18f:.45f,Speed>500?1.1f:1.f);
+            auto* Sound=(bSprintHeld && !bIsCrouched?Settings->RunFootstepSound:Settings->WalkFootstepSound).LoadSynchronous();
+            if(!Sound) Sound=FootstepSound;
+            if(Sound) UGameplayStatics::PlaySoundAtLocation(this,Sound,GetActorLocation(),bIsCrouched?.18f:.45f,1.f);
         }
     }
     else FootstepDistance=0;
@@ -179,8 +206,9 @@ void AHSCharacter::Tick(float Dt)
 void AHSCharacter::RefreshFocus()
 {
     FocusedPickup=nullptr;
+    FocusedInteraction=nullptr;
     auto* PC=Cast<AHSPlayerController>(Controller);
-    if(!PC || PC->IsMouseMode()) return;
+    if(!PC || PC->IsMouseMode() || PC->IsGameplayLocked()) { ApplyInteractionHighlight(nullptr); return; }
     FVector Start; FRotator Rot; PC->GetPlayerViewPoint(Start,Rot);
     // Sweep from the camera so pickup prompts obey walls; reach still measured from the player.
     FHitResult Hit;
@@ -188,11 +216,33 @@ void AHSCharacter::RefreshFocus()
     const float TraceDistance=GetDefault<UHSSettings>()->PickupDistance+80.f;
     if(GetWorld()->SweepSingleByChannel(Hit,Start,Start+Rot.Vector()*TraceDistance,FQuat::Identity,ECC_Visibility,FCollisionShape::MakeSphere(18),Params))
     {
-        auto* Candidate=Cast<AHSPickup>(Hit.GetActor());
-        if(Candidate && FVector::Dist(GetActorLocation(),Candidate->GetActorLocation())<=GetDefault<UHSSettings>()->PickupDistance)
-            FocusedPickup=Candidate;
+        auto* Candidate=Hit.GetActor();
+        if(Candidate && FVector::Dist(GetActorLocation(),Candidate->GetActorLocation())<=GetDefault<UHSSettings>()->PickupDistance && (Candidate->IsA<AHSPickup>() || Candidate->IsA<AHSSwapPainting>() || Candidate->IsA<AHSInspectTrigger>() || Candidate->IsA<AHSMovableProp>()))
+        { FocusedInteraction=Candidate; FocusedPickup=Cast<AHSPickup>(Candidate); }
     }
+    if(SelectedPainting.IsValid() && (SelectedPainting->bSwapping || FVector::Dist(GetActorLocation(),SelectedPainting->GetActorLocation())>GetDefault<UHSSettings>()->PickupDistance+50.f)) SelectedPainting.Reset();
+    ApplyInteractionHighlight(FocusedInteraction?FocusedInteraction.Get():SelectedPainting.Get());
 }
+void AHSCharacter::ApplyInteractionHighlight(AActor* Target)
+{
+    auto* TargetMesh=Target?Target->FindComponentByClass<UMeshComponent>():nullptr;
+    if(HighlightedMesh.Get()!=TargetMesh)
+    { if(HighlightedMesh.IsValid()) {HighlightedMesh->SetOverlayMaterial(nullptr);HighlightedMesh->SetRenderCustomDepth(false);} HighlightedMesh=TargetMesh; }
+    if(TargetMesh) {TargetMesh->SetOverlayMaterial(Target->IsA<AHSSwapPainting>()?PaintingHighlight:PickupHighlight);TargetMesh->SetCustomDepthStencilValue(Target->IsA<AHSSwapPainting>()?255:1);TargetMesh->SetRenderCustomDepth(true);}
+}
+void AHSCharacter::SelectPainting(AHSSwapPainting* Painting)
+{
+    if(!IsValid(Painting) || Painting->bSwapping) return;
+    if(!SelectedPainting.IsValid()) SelectedPainting=Painting;
+    else if(SelectedPainting.Get()!=Painting)
+    {
+        if(SelectedPainting->SwapWith(Painting)) SelectedPainting.Reset();
+        else SelectedPainting=Painting;
+    }
+    ApplyInteractionHighlight(Painting);
+}
+void AHSCharacter::Landed(const FHitResult& Hit)
+{ Super::Landed(Hit); if(auto* Sound=GetDefault<UHSSettings>()->LandingSound.LoadSynchronous()) UGameplayStatics::PlaySoundAtLocation(this,Sound,GetActorLocation()); }
 void AHSCharacter::StartPickupAnimation(UHSItemData* Item,const FVector& Target)
 {
     PickupTargetLocation=Target; PickupAnimationDuration=PickupMontage?FMath::Max(.1f,PickupMontage->GetPlayLength()):.7f; PickupTimeLeft=PickupAnimationDuration;
@@ -204,6 +254,8 @@ void AHSCharacter::Interact()
     auto* PC=Cast<AHSPlayerController>(Controller);
     if(!PC || PC->IsMouseMode() || PC->IsGameplayLocked() || PickupTimeLeft>0) return;
     RefreshFocus();
+    if(auto* Painting=Cast<AHSSwapPainting>(FocusedInteraction)) {SelectPainting(Painting);return;}
+    if(auto* Trigger=Cast<AHSInspectTrigger>(FocusedInteraction)) {Trigger->Interact(this);return;}
     if(!FocusedPickup)
     {
         FVector Start; FRotator Rot; PC->GetPlayerViewPoint(Start,Rot); FHitResult Hit;

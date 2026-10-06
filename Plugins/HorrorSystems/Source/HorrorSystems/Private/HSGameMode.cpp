@@ -17,6 +17,7 @@ AActor* AHSGameMode::ChoosePlayerStart_Implementation(AController* Player)
         UE_LOG(LogTemp,Warning,TEXT("HorrorSystems: spawn tag %s absent; falling back to default start"),*S->PendingSpawnTag.ToString());
     }
     for(TActorIterator<APlayerStart> It(GetWorld());It;++It) if(It->PlayerStartTag==TEXT("Default")) return *It;
+    for(TActorIterator<APlayerStart> It(GetWorld());It;++It) if(It->PlayerStartTag==TEXT("Safe_A")) return *It;
     return Super::ChoosePlayerStart_Implementation(Player);
 }
 void AHSGameMode::StartPlay()

@@ -1,7 +1,7 @@
 Reborn/Binaries/Win64/D3D12/x64/D3D12Core.dll	2026-09-13T17:23:11.342Z
 Reborn/Binaries/Win64/D3D12/x64/d3d12SDKLayers.dll	2026-09-13T17:23:11.344Z
 Reborn/Binaries/Win64/DML/x64/DirectML.dll	2026-09-13T17:13:53.815Z
-Reborn/Binaries/Win64/Reborn-Win64-Shipping.exe	2026-10-04T19:03:41.733Z
+Reborn/Binaries/Win64/Reborn-Win64-Shipping.exe	2026-10-05T18:19:59.841Z
 Reborn/Binaries/Win64/tbb12.dll	2026-09-13T17:18:28.721Z
 Reborn/Binaries/Win64/tbbmalloc.dll	2026-09-13T17:18:28.721Z
 Engine/Extras/Redist/en-us/vc_redist.x64.exe	2026-09-13T13:42:52.017Z
@@ -16,6 +16,6 @@ Engine/Binaries/ThirdParty/Windows/XAudio2_9/x64/xaudio2_9redist.dll	2026-09-13T
 Engine/Content/Renderer/TessellationTable.bin	2026-09-13T13:01:16.794Z
 Engine/Content/Slate/Cursor/invisible.cur	2026-09-13T13:01:16.851Z
 Engine/Plugins/NNE/NNERuntimeORT/Binaries/ThirdParty/Onnxruntime/Win64/onnxruntime.dll	2026-09-13T16:33:05.042Z
-Engine/Config/StagedBuild_Reborn.ini	2026-10-04T19:04:25.057Z
-Reborn.exe	2026-10-04T19:04:25.053Z
+Engine/Config/StagedBuild_Reborn.ini	2026-10-05T18:20:21.009Z
+Reborn.exe	2026-10-05T18:20:21.005Z
 NOTICES.txt	2026-09-13T17:19:06.745Z
