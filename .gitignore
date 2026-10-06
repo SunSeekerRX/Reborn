@@ -26,6 +26,7 @@ __pycache__/
 /Portable/
 /Archive/
 /LocalArtifacts/
+/work/
 Build/**/FileOpenOrder/
 Build/**/ShaderCache/
 
