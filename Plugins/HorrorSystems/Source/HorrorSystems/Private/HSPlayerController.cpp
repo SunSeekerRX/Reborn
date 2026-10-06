@@ -11,13 +11,19 @@
 #include "Framework/Application/SlateApplication.h"
 #include "Camera/PlayerCameraManager.h"
 #include "Engine/Texture2D.h"
+#include "HSProgression.h"
+#include "HSSettings.h"
+#include "Components/AudioComponent.h"
 
 AHSPlayerController::AHSPlayerController() { PrimaryActorTick.bTickEvenWhenPaused=true; }
 void AHSPlayerController::BeginPlay()
 {
     Super::BeginPlay();
     GetSession()->bTitleScreen=UGameplayStatics::GetCurrentLevelName(this,true)==TEXT("RebornTitle");
+    GetGameInstance()->GetSubsystem<UHSProgression>()->MapVisits.FindOrAdd(FName(*UGameplayStatics::GetCurrentLevelName(this,true)))++;
     if(GetSession()->bTitleScreen) {bGameplayLocked=true;TitleTexture=LoadObject<UTexture2D>(nullptr,TEXT("/HorrorSystems/UI/T_MobiusPixel.T_MobiusPixel"));}
+    if(GetSession()->bTitleScreen) if(auto* Sound=GetDefault<UHSSettings>()->ChaseMusic.LoadSynchronous()) TitleMusic=UGameplayStatics::SpawnSound2D(this,Sound,.24f);
+    if(GetSession()->bTitleScreen) if(auto* Sound=GetDefault<UHSSettings>()->TitleRevealSound.LoadSynchronous()) UGameplayStatics::PlaySound2D(this,Sound,.4f);
     if(PlayerCameraManager) { PlayerCameraManager->ViewPitchMin=-80.f; PlayerCameraManager->ViewPitchMax=80.f; }
     FRotator InitialView=GetControlRotation(); InitialView.Pitch=-8.f; SetControlRotation(InitialView);
     if(IsLocalController() && GetWorld()->GetGameViewport())
@@ -29,6 +35,7 @@ void AHSPlayerController::BeginPlay()
 }
 void AHSPlayerController::EndPlay(const EEndPlayReason::Type Reason)
 {
+    if(TitleMusic) TitleMusic->Stop();
     if(Overlay.IsValid() && GetWorld() && GetWorld()->GetGameViewport()) GetWorld()->GetGameViewport()->RemoveViewportWidgetContent(Overlay.ToSharedRef());
     Overlay.Reset(); Super::EndPlay(Reason);
 }
@@ -61,6 +68,8 @@ void AHSPlayerController::ActivateNumberSlot(int32 Index)
 }
 void AHSPlayerController::Notify(const FText& Text,float Seconds) { Notification=Text; NotificationUntil=FPlatformTime::Seconds()+Seconds; }
 FText AHSPlayerController::GetNotification() const { return FPlatformTime::Seconds()<NotificationUntil?Notification:FText::GetEmpty(); }
+void AHSPlayerController::Speak(const FText& Text,float Seconds) {Subtitle=Text;SubtitleUntil=FPlatformTime::Seconds()+FMath::Max(.1f,Seconds);}
+FText AHSPlayerController::GetSubtitle() const {return FPlatformTime::Seconds()<SubtitleUntil?Subtitle:FText::GetEmpty();}
 void AHSPlayerController::ToggleHotbarMouse() { if(bGameplayLocked || bInspecting) return; bHotbarMouse=!bHotbarMouse; ApplyInputMode(); }
 void AHSPlayerController::InspectSelected()
 {

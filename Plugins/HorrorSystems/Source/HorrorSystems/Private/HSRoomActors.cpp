@@ -12,6 +12,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Components/PointLightComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerStart.h"
 #include "Engine/GameInstance.h"
@@ -32,7 +33,7 @@ AHSRoomDirector::AHSRoomDirector()
 }
 UHSProgression* AHSRoomDirector::Progress() const { return GetGameInstance()->GetSubsystem<UHSProgression>(); }
 const FHSRoomRoute* AHSRoomDirector::TravelRoute() const
-{ return bSafeTravelReady?&ReadyTravelRoute:Rules?Rules->RouteFor(Progress()->Stage):nullptr; }
+{ return bSafeTravelReady?&ReadyTravelRoute:Rules?Rules->RouteFor(Progress()->Stage,Progress()->StoryStep):nullptr; }
 AHSRoomDirector* AHSRoomDirector::Find(UWorld* W)
 {
     if(!W) return nullptr;
@@ -149,6 +150,11 @@ AHSWindowSequence::AHSWindowSequence()
     RootComponent=CreateDefaultSubobject<USceneComponent>(TEXT("WindowRoot"));
     Camera=CreateDefaultSubobject<UCameraComponent>(TEXT("WindowCamera")); Camera->SetupAttachment(RootComponent);
     Camera->FieldOfView=65;
+    WindowFill=CreateDefaultSubobject<UPointLightComponent>(TEXT("WindowCinematicFill"));WindowFill->SetupAttachment(Camera);
+    WindowFill->SetMobility(EComponentMobility::Movable);
+    WindowFill->SetRelativeLocation(FVector(35,0,0));WindowFill->SetIntensityUnits(ELightUnits::Lumens);
+    WindowFill->SetIntensity(160.f);WindowFill->SetAttenuationRadius(480.f);WindowFill->SetLightColor(FLinearColor(.55f,.65f,.8f));
+    WindowFill->CastShadows=false;WindowFill->SetVisibility(false);
 }
 void AHSWindowSequence::Play()
 {
@@ -162,6 +168,7 @@ void AHSWindowSequence::Play()
     CameraPath.Add(GetActorTransform().TransformPosition(CameraOffset));
     for(int32 I=1;I<CameraPath.Num();++I) CameraPathDistances.Add(CameraPathDistances.Last()+FVector::Distance(CameraPath[I-1],CameraPath[I]));
     bPlaying=true; Elapsed=0;
+    WindowFill->SetVisibility(true);
     GetGameInstance()->GetSubsystem<UHSProgression>()->bCinematic=true;
     if(auto* Sound=GetDefault<UHSSettings>()->MonsterEntranceSound.LoadSynchronous()) UGameplayStatics::PlaySound2D(this,Sound,.5f);
     Camera->SetWorldLocationAndRotation(StartView,StartRotation); PC->SetGameplayLocked(true); PC->SetViewTarget(this);
@@ -238,7 +245,9 @@ void AHSWindowSequence::Tick(float Dt)
         else Local=FMath::Lerp(MonsterLookPoint,MonsterEnd,FMath::Clamp((T-.70f)/.18f,0.f,1.f));
         const FVector World=GetActorTransform().TransformPosition(Local); Performer->SetActorLocation(World);
         Performer->GetCharacterMovement()->Velocity=(World-Old)/FMath::Max(.001f,Dt);
-        const FRotator Look=T>=.58f && T<.70f ? (Destination-World).Rotation() : GetActorRotation();
+        const FVector Travel=World-Old;
+        const FRotator Look=T>=.58f && T<.70f ? (Destination-World).Rotation()
+            : !Travel.IsNearlyZero()?Travel.Rotation():(GetActorTransform().TransformPosition(MonsterLookPoint)-World).Rotation();
         Performer->SetActorRotation(FMath::RInterpTo(Performer->GetActorRotation(),FRotator(0,Look.Yaw,0),Dt,8.f));
     }
     if(T>=1) Finish();
@@ -247,6 +256,7 @@ void AHSWindowSequence::Finish()
 {
     if(!bPlaying) return;
     bPlaying=false; GetGameInstance()->GetSubsystem<UHSProgression>()->bCinematic=false;
+    WindowFill->SetVisibility(false);
     if(Performer) Performer->Destroy(); Performer=nullptr;
     if(auto* PC=Cast<AHSPlayerController>(UGameplayStatics::GetPlayerController(this,0))) { PC->SetViewTarget(PC->GetPawn()); PC->SetGameplayLocked(false); }
 }

@@ -1,7 +1,10 @@
 #include "Misc/AutomationTest.h"
 #include "HSRoomActors.h"
 #include "HSCharacter.h"
+#include "Components/PointLightComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "HSPlayerController.h"
+#include "HSWorldActors.h"
 #include "HSProgression.h"
 #include "HSAI.h"
 #include "Engine/Engine.h"
@@ -25,6 +28,8 @@ class FWindowCameraCheck : public IAutomationLatentCommand
     int32 Samples=0;
     double StartedAt=0;
     bool WindowChecked=false;
+    bool WalkingFacingChecked=false,LookingChecked=false,RunningChecked=false;
+    float ApproachSpeed=0;
 public:
     explicit FWindowCameraCheck(FAutomationTestBase* InTest):Test(InTest) {}
     bool Update() override
@@ -37,6 +42,9 @@ public:
         if(!Player || !Room || !Room->WindowSequence) {Test->AddError(TEXT("Configured RoomA is required"));return true;}
         if(!Started)
         {
+            // The current story starts this performance after reading B's clue in the main room.
+            for(TActorIterator<AHSPickup> It(W);It;++It) if(It->ClueId==TEXT("Warning_B"))
+            {Player->SetActorLocation(It->GetActorLocation()+FVector(-180,0,-29));break;}
             Sequence=Room->WindowSequence;Sequence->Finish();PC->PlayerCameraManager->UpdateCamera(0);Sequence->Play();
             Previous=Sequence->Camera->GetComponentLocation();Started=true;StartedAt=FPlatformTime::Seconds();
             Test->AddInfo(FString::Printf(TEXT("Intro begins at %s; destination %s"),*Previous.ToString(),*Sequence->GetActorTransform().TransformPosition(Sequence->CameraOffset).ToString()));
@@ -52,16 +60,36 @@ public:
             Test->AddError(FString::Printf(TEXT("Opening camera crosses geometry: t=%.3f from=%s to=%s blocker=%s point=%s penetration=%d"),Sequence->Elapsed,*Previous.ToString(),*Current.ToString(),*GetNameSafe(Hit.GetActor()),*Hit.ImpactPoint.ToString(),Hit.bStartPenetrating));
         }
         Previous=Current;++Samples;
+        const float Phase=Sequence->Elapsed/FMath::Max(1.f,Sequence->Duration);
+        if(Sequence->Performer)
+        {
+            auto* Ghost=Sequence->Performer.Get();
+            if(!WalkingFacingChecked && Phase>.5f && Phase<.58f)
+            {
+                WalkingFacingChecked=true;ApproachSpeed=Ghost->GetVelocity().Size2D();
+                const float Alignment=FVector::DotProduct(Ghost->GetActorForwardVector(),Ghost->GetVelocity().GetSafeNormal2D());
+                Test->AddInfo(FString::Printf(TEXT("Window walk orientation: alignment %.3f, yaw %.1f, velocity %s"),Alignment,Ghost->GetActorRotation().Yaw,*Ghost->GetVelocity().ToString()));
+                Test->TestTrue(TEXT("Passing monster faces its walking direction"),Alignment>.9f);
+            }
+            if(!LookingChecked && Phase>.68f && Phase<.70f)
+            {LookingChecked=true;Test->TestTrue(TEXT("Window monster turns toward the window"),FVector::DotProduct(Ghost->GetActorForwardVector(),(Current-Ghost->GetActorLocation()).GetSafeNormal2D())>.9f);}
+            if(!RunningChecked && Phase>.8f && Phase<.88f)
+            {RunningChecked=true;Test->TestTrue(TEXT("Monster runs away faster than it approached"),Ghost->GetVelocity().Size2D()>ApproachSpeed*1.5f);}
+        }
         if(!WindowChecked && Sequence->Elapsed>Sequence->Duration*.60f)
         {
             WindowChecked=true;
             const FVector Destination=Sequence->GetActorTransform().TransformPosition(Sequence->CameraOffset);
             Test->TestTrue(TEXT("Camera reaches the window rather than stopping at a wall"),Current.Equals(Destination,2.f));
+            Test->AddInfo(FString::Printf(TEXT("Window camera reached %s (target %s)"),*Current.ToString(),*Destination.ToString()));
             Test->TestNotNull(TEXT("Window monster performer exists"),Sequence->Performer.Get());
+            Test->TestTrue(TEXT("Cinematic fill illuminates the window performer"),Sequence->WindowFill->IsVisible());
             if(Sequence->Performer)
             {
+                Test->AddInfo(FString::Printf(TEXT("Window performer mesh bounds: center %s extent %s"),*Sequence->Performer->GetMesh()->Bounds.Origin.ToString(),*Sequence->Performer->GetMesh()->Bounds.BoxExtent.ToString()));
                 FHitResult Sight;
                 W->LineTraceSingleByChannel(Sight,Current,Sequence->Performer->GetActorLocation()+FVector(0,0,65),ECC_Visibility,Params);
+                if(Sight.bBlockingHit) Test->AddInfo(FString::Printf(TEXT("Sight blocked by %s at %s"),*GetNameSafe(Sight.GetActor()),*Sight.ImpactPoint.ToString()));
                 Test->TestFalse(TEXT("Window monster is not occluded by room furniture or walls"),Sight.bBlockingHit);
             }
             if(FParse::Param(FCommandLine::Get(),TEXT("HSVisualTest"))) FScreenshotRequest::RequestScreenshot(FPaths::Combine(FPaths::ProjectSavedDir(),TEXT("Verification/RoomAWindowFixed.png")),true,false);
@@ -69,9 +97,11 @@ public:
         if(!Sequence->bPlaying)
         {
             Test->TestFalse(TEXT("Cinematic state cleared"),Room->Progress()->bCinematic);
+            Test->TestFalse(TEXT("Cinematic fill stops with the performance"),Sequence->WindowFill->IsVisible());
             Test->TestFalse(TEXT("Player control restored"),PC->IsGameplayLocked());
             Test->TestTrue(TEXT("Camera returns to the player"),PC->GetViewTarget()==Player);
             Test->TestTrue(TEXT("Entire cinematic was sampled"),Samples>30);
+            Test->TestTrue(TEXT("Walk, look and run phases were sampled"),WalkingFacingChecked&&LookingChecked&&RunningChecked);
             Test->AddInfo(FString::Printf(TEXT("Camera path checked over %d frames"),Samples));return true;
         }
         if(FPlatformTime::Seconds()-StartedAt>30) {Sequence->Finish();Test->AddError(TEXT("Intro did not finish"));return true;}

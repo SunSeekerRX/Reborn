@@ -27,6 +27,8 @@ public:
     UPROPERTY() bool bRecoverySafety=false;
     UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Travel") float WhiteTravelAlpha=0.f;
     UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Travel") bool bWhiteTransition=false;
+    UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Health") bool bDeathTransition=false;
+    UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Travel") float EndingBlackAmount=0;
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Health") int32 Lives=3;
     UFUNCTION(BlueprintCallable, Category="Health") bool LoseLife();
     UFUNCTION(BlueprintPure, Category="Health") bool IsDefeated() const { return Lives<=0; }
@@ -49,6 +51,9 @@ private:
     FName PendingLocalRoom;
     bool bPendingLocal=false;
     bool bPendingMenu=false;
+    bool bPendingRecovery=false;
+    bool bEndingToTitle=false;
+    bool ApplySafetyRecovery();
     int32 TravelPhase=0;
     float TravelHold=0.f;
     bool TickWhiteTravel(float Dt);

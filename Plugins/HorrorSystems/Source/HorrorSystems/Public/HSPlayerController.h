@@ -25,6 +25,8 @@ public:
     UFUNCTION(BlueprintPure, Category="UI") UHSWorldState* GetSession() const;
     void Notify(const FText& Message, float Seconds=3.f);
     FText GetNotification() const;
+    UFUNCTION(BlueprintCallable,Category="Story") void Speak(const FText& Text,float Seconds=5.f);
+    FText GetSubtitle() const;
     bool IsMouseMode() const;
     UPROPERTY() TObjectPtr<class UTexture2D> TitleTexture;
     bool IsInspecting() const { return bInspecting; }
@@ -43,6 +45,9 @@ protected:
     bool bGameplayLocked=false;
     FText Notification;
     double NotificationUntil=0;
+    FText Subtitle;
+    double SubtitleUntil=0;
+    UPROPERTY() TObjectPtr<class UAudioComponent> TitleMusic;
     int32 LastNumberSlot=INDEX_NONE;
     double LastNumberTime=-1;
     TSharedPtr<SHSOverlay> Overlay;

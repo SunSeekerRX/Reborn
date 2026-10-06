@@ -13,6 +13,7 @@ class HORRORSYSTEMS_API UHSItemData : public UPrimaryDataAsset
 public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Item") FName ItemId;
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Item") FText DisplayName;
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Story") FText PickupSubtitle;
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Item", meta=(MultiLine=true)) FText Description;
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Item") TObjectPtr<UTexture2D> Icon;
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Item") TObjectPtr<UTexture2D> InspectionImage;

@@ -78,6 +78,7 @@ assets.import_asset_tasks(tasks)
 def material(name, color, metallic, texture=None):
     path = folder + "/" + name
     mat = eal.load_asset(path) if eal.does_asset_exist(path) else assets.create_asset(name,folder,u.Material,u.MaterialFactoryNew())
+    mat.set_editor_property('used_with_nanite',True)
     mel.delete_all_material_expressions(mat)
     if texture:
         c = mel.create_material_expression(mat,u.MaterialExpressionTextureSample,0,0)

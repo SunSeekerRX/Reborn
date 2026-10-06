@@ -123,8 +123,12 @@ public:
             Player=Cast<AHSCharacter>(UGameplayStatics::GetPlayerPawn(W,0));
             for(TActorIterator<AHSMonster> It(W);It;++It) if(It->bCanDamagePlayer && !It->bCinematicActor) {Monster=*It;break;}
             if(!Player.IsValid() || !Monster.IsValid()) {Test->AddError(TEXT("SceneOne monster missing"));return true;}
-            if(auto* Room=AHSRoomDirector::Find(W)) Room->FinishIntro();
-            Player->SetActorLocation(FVector(-850,500,Player->GetActorLocation().Z));
+            auto* Room=AHSRoomDirector::Find(W);
+            if(!Room) {Test->AddError(TEXT("Room director missing"));return true;}
+            Room->FinishIntro();
+            // A has no pursuer in stage one. Exercise the actual stage-two authored pursuer.
+            auto* Progress=Room->Progress();Progress->SetStage(2);Progress->StoryStep=5;Progress->ActiveRoom=NAME_None;Room->Tick(0);
+            Player->SetActorLocation(FVector(-850,500,192));Room->Tick(.01f);
             Started=W->GetTimeSeconds();
         }
         if(State->Lives<3)

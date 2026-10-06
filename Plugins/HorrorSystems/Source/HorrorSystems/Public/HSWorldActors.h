@@ -27,6 +27,7 @@ public:
     UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Progression") FName ClueId;
     UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Progression") int32 MinimumStage=1;
     UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Progression") int32 MaximumStage=3;
+    UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Progression") int32 RequiredStoryStep=-1;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Item") bool bRotateForDemo=true;
     UFUNCTION(BlueprintCallable, Category="Item") bool TryPickup(AHSCharacter* Character);
     FString GetPersistentKey() const;
@@ -43,6 +44,7 @@ public:
     UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Portal") bool bTravelEnabled=true;
     UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Portal") bool bRequiresSafeReturn=false;
     UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Portal") bool bWhiteLightTravel=false;
+    UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Portal") TObjectPtr<class AHSWoodDoor> OccludingDoor;
     UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Portal") TObjectPtr<class UPointLightComponent> PortalLight;
     virtual void BeginPlay() override;
     virtual void Tick(float Dt) override;

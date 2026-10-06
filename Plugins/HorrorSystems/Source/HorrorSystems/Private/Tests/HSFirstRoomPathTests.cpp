@@ -2,7 +2,9 @@
 #include "HSCharacter.h"
 #include "HSPlayerController.h"
 #include "HSRoomActors.h"
+#include "HSStoryActors.h"
 #include "HSProgression.h"
+#include "HSWorldState.h"
 #include "HSAI.h"
 #include "Engine/Engine.h"
 #include "EngineUtils.h"
@@ -18,6 +20,9 @@ class FHSFirstRoomPath : public IAutomationLatentCommand
     TWeakObjectPtr<AHSCharacter> Player;
     double Started=-1;
     int32 Phase=0;
+    bool DoorOpened=false;
+    bool LoadedFreshRoom=false;
+    double LoadStarted=0;
 public:
     explicit FHSFirstRoomPath(FAutomationTestBase* InTest):Test(InTest) {}
     bool Update() override
@@ -25,12 +30,18 @@ public:
         UWorld* W=nullptr;
         for(const auto& C:GEngine->GetWorldContexts()) if(C.WorldType==EWorldType::Game || C.WorldType==EWorldType::PIE) W=C.World();
         if(!W) {Test->AddError(TEXT("No game world"));return true;}
+        if(!LoadedFreshRoom)
+        {
+            if(auto* PC=Cast<AHSPlayerController>(UGameplayStatics::GetPlayerController(W,0))) PC->GetSession()->ResetSession();
+            LoadedFreshRoom=true;LoadStarted=FPlatformTime::Seconds();UGameplayStatics::OpenLevel(W,TEXT("/HorrorSystems/Maps/Basic_roomA"));return false;
+        }
         if(Started<0)
         {
             auto* PC=Cast<AHSPlayerController>(UGameplayStatics::GetPlayerController(W,0));
             Player=PC?Cast<AHSCharacter>(PC->GetPawn()):nullptr;
             auto* Room=AHSRoomDirector::Find(W);
-            if(!Room || !Player.IsValid()) {Test->AddError(TEXT("Room or player missing"));return true;}
+            if(!Room || !Player.IsValid())
+            {if(FPlatformTime::Seconds()-LoadStarted>30) {Test->AddError(TEXT("Room or player missing"));return true;}return false;}
             Test->TestEqual(TEXT("Fresh game starts in the first room"),Room->Rules->RoomId,FName(TEXT("RoomA")));
             Test->TestEqual(TEXT("Fresh game starts in stage one"),Room->Progress()->Stage,1);
             Room->FinishIntro();PC->SetGameplayLocked(false);Player->ClearMovementModifiers();
@@ -39,6 +50,8 @@ public:
         }
         if(!Player.IsValid()) {Test->AddError(TEXT("Player lost"));return true;}
         const FVector Direction=Phase==0?FVector(0,1,0):FVector(-1,0,0);
+        if(!DoorOpened && Player->GetActorLocation().Y>-830)
+        {if(auto* Story=Cast<AHSStoryDirector>(AHSRoomDirector::Find(W));Story && Story->SafeDoor) DoorOpened=Story->SafeDoor->Use(Player.Get());}
         Player->AddMovementInput(Direction,1.f);
         if(Phase==0 && Player->GetActorLocation().Y>300.f)
         {Phase=1;Started=W->GetTimeSeconds();Player->ConsumeMovementInputVector();Player->GetCharacterMovement()->StopMovementImmediately();}

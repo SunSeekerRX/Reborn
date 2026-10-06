@@ -8,6 +8,18 @@ class HORRORSYSTEMS_API UHSSettings : public UDeveloperSettings
 {
     GENERATED_BODY()
 public:
+    UPROPERTY(Config,EditAnywhere,Category="Audio") TSoftObjectPtr<class USoundBase> DoorOpenSound;
+    UPROPERTY(Config,EditAnywhere,Category="Audio") TSoftObjectPtr<class USoundBase> DoorCloseSound;
+    UPROPERTY(Config,EditAnywhere,Category="Audio") TSoftObjectPtr<class USoundBase> LampFlickerSound;
+    UPROPERTY(Config,EditAnywhere,Category="Audio") TSoftObjectPtr<class USoundBase> ChaseMusic;
+    UPROPERTY(Config,EditAnywhere,Category="Audio") TSoftObjectPtr<class USoundBase> SafeRoomSound;
+    UPROPERTY(Config,EditAnywhere,Category="Audio") TSoftObjectPtr<class USoundBase> FirstMonsterRoarSound;
+    UPROPERTY(Config,EditAnywhere,Category="Audio") TSoftObjectPtr<class USoundBase> FinalMonsterRoarSound;
+    UPROPERTY(Config,EditAnywhere,Category="Audio") TSoftObjectPtr<class USoundBase> MonsterAttackSound;
+    UPROPERTY(Config,EditAnywhere,Category="Audio") TSoftObjectPtr<class USoundBase> TitleRevealSound;
+    UPROPERTY(Config,EditAnywhere,Category="Audio") TSoftObjectPtr<class USoundBase> PowerDownSound;
+    UPROPERTY(Config,EditAnywhere,Category="Audio") TSoftObjectPtr<class USoundBase> CabinetImpactSound;
+    UPROPERTY(Config,EditAnywhere,Category="Audio") TSoftObjectPtr<class USoundBase> Stage2FootstepSound;
     UHSSettings() { CategoryName=TEXT("Game"); }
     UPROPERTY(Config,EditAnywhere,Category="Audio") TSoftObjectPtr<class USoundBase> WalkFootstepSound;
     UPROPERTY(Config,EditAnywhere,Category="Audio") TSoftObjectPtr<class USoundBase> RunFootstepSound;

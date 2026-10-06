@@ -10,6 +10,7 @@
 #include "HSAI.h"
 #include "HSProgression.h"
 #include "HSSceneInteractions.h"
+#include "HSStoryActors.h"
 #include "Components/MeshComponent.h"
 #include "Materials/MaterialInterface.h"
 #include "Camera/CameraComponent.h"
@@ -65,8 +66,9 @@ bool AHSCharacter::ReceiveMonsterContact(AHSMonster* Monster)
     auto* State=GetGameInstance()->GetSubsystem<UHSWorldState>();
     auto* Progress=GetGameInstance()->GetSubsystem<UHSProgression>();
     auto* Room=AHSRoomDirector::Find(GetWorld());
-    if(!Monster || !Monster->bCanDamagePlayer || Monster->bCinematicActor || HitProtectionRemaining>0.f || !PC || PC->IsGameplayLocked() || PC->IsInspecting() || Progress->bCinematic || Progress->bCompleted || (Room && State->IsInSafety(this)) || !State->LoseLife()) return false;
+    if(!Monster || !Monster->bPursuitEnabled || !Monster->bCanDamagePlayer || Monster->bCinematicActor || HitProtectionRemaining>0.f || !PC || PC->IsGameplayLocked() || PC->IsInspecting() || Progress->bCinematic || Progress->bCompleted || (Room && State->IsInSafety(this)) || !State->LoseLife()) return false;
     HitProtectionRemaining=FMath::Max(5.25f,Monster->StaggerDuration+.25f);
+    if(auto* Sound=GetDefault<UHSSettings>()->MonsterAttackSound.LoadSynchronous()) UGameplayStatics::PlaySound2D(this,Sound,.6f);
     FVector Away=(GetActorLocation()-Monster->GetActorLocation()).GetSafeNormal2D();
     if(Away.IsNearlyZero()) Away=GetActorForwardVector();
     LaunchCharacter(Away*180.f+FVector(0,0,30),true,true);
@@ -197,6 +199,7 @@ void AHSCharacter::Tick(float Dt)
         {
             FootstepDistance=0;
             auto* Sound=(bSprintHeld && !bIsCrouched?Settings->RunFootstepSound:Settings->WalkFootstepSound).LoadSynchronous();
+            if(GetGameInstance()->GetSubsystem<UHSProgression>()->Stage==2) if(auto* StageSound=Settings->Stage2FootstepSound.LoadSynchronous()) Sound=StageSound;
             if(!Sound) Sound=FootstepSound;
             if(Sound) UGameplayStatics::PlaySoundAtLocation(this,Sound,GetActorLocation(),bIsCrouched?.18f:.45f,1.f);
         }
@@ -212,18 +215,28 @@ void AHSCharacter::RefreshFocus()
     FVector Start; FRotator Rot; PC->GetPlayerViewPoint(Start,Rot);
     // Trace the precise view ray first: a wide sweep can hit a tabletop before a small key resting on it.
     FHitResult Hit;
-    FCollisionQueryParams Params(SCENE_QUERY_STAT(HSPickupFocus),false,this);
+    // Thin tabletop papers sit below the table's conservative simple collision box.
+    // Use the rendered triangle surface for the view ray so visible clues remain selectable.
+    FCollisionQueryParams Params(SCENE_QUERY_STAT(HSPickupFocus),true,this);
     const float TraceDistance=GetDefault<UHSSettings>()->PickupDistance+80.f;
     const FVector End=Start+Rot.Vector()*TraceDistance;
     bool bHit=GetWorld()->LineTraceSingleByChannel(Hit,Start,End,ECC_Visibility,Params);
-    if(!bHit) bHit=GetWorld()->SweepSingleByChannel(Hit,Start,End,FQuat::Identity,ECC_Visibility,FCollisionShape::MakeSphere(18),Params);
+    // Frames may contain a central opening or single-sided canvas. Their authored simple
+    // collision is selectable, but only when it is in front of the precise scene blocker.
+    FHitResult FrameHit;FCollisionQueryParams FrameParams=Params;FrameParams.bTraceComplex=false;
+    if(GetWorld()->LineTraceSingleByChannel(FrameHit,Start,End,ECC_Visibility,FrameParams)
+        && FrameHit.GetActor() && FrameHit.GetActor()->IsA<AHSSwapPainting>() && (!bHit || FrameHit.Distance<=Hit.Distance))
+    {Hit=FrameHit;bHit=true;}
+    if(!bHit) {Params.bTraceComplex=false;bHit=GetWorld()->SweepSingleByChannel(Hit,Start,End,FQuat::Identity,ECC_Visibility,FCollisionShape::MakeSphere(18),Params);}
     if(bHit)
     {
         auto* Candidate=Hit.GetActor();
-        if(Candidate && FVector::Dist(GetActorLocation(),Candidate->GetActorLocation())<=GetDefault<UHSSettings>()->PickupDistance && (Candidate->IsA<AHSPickup>() || Candidate->IsA<AHSSwapPainting>() || Candidate->IsA<AHSInspectTrigger>() || Candidate->IsA<AHSMovableProp>()))
+        const auto* CandidateMesh=Candidate?Candidate->FindComponentByClass<UMeshComponent>():nullptr;
+        const FVector InteractionPoint=CandidateMesh?CandidateMesh->Bounds.Origin:Candidate?Candidate->GetActorLocation():FVector::ZeroVector;
+        if(Candidate && FVector::Dist(GetActorLocation(),InteractionPoint)<=GetDefault<UHSSettings>()->PickupDistance && (Candidate->IsA<AHSPickup>() || Candidate->IsA<AHSSwapPainting>() || Candidate->IsA<AHSInspectTrigger>() || Candidate->IsA<AHSMovableProp>()))
         { FocusedInteraction=Candidate; FocusedPickup=Cast<AHSPickup>(Candidate); }
     }
-    if(SelectedPainting.IsValid() && (SelectedPainting->bSwapping || FVector::Dist(GetActorLocation(),SelectedPainting->GetActorLocation())>GetDefault<UHSSettings>()->PickupDistance+50.f)) SelectedPainting.Reset();
+    if(SelectedPainting.IsValid() && (SelectedPainting->bSwapping || FVector::Dist(GetActorLocation(),SelectedPainting->Mesh->Bounds.Origin)>GetDefault<UHSSettings>()->PickupDistance+50.f)) SelectedPainting.Reset();
     ApplyInteractionHighlight(FocusedInteraction?FocusedInteraction.Get():SelectedPainting.Get());
 }
 void AHSCharacter::ApplyInteractionHighlight(AActor* Target)
@@ -258,6 +271,7 @@ void AHSCharacter::Interact()
     auto* PC=Cast<AHSPlayerController>(Controller);
     if(!PC || PC->IsMouseMode() || PC->IsGameplayLocked() || PickupTimeLeft>0) return;
     RefreshFocus();
+    if(auto* Door=Cast<AHSWoodDoor>(FocusedInteraction)) {Door->Use(this);return;}
     if(auto* Painting=Cast<AHSSwapPainting>(FocusedInteraction)) {SelectPainting(Painting);return;}
     if(auto* Trigger=Cast<AHSInspectTrigger>(FocusedInteraction)) {Trigger->Interact(this);return;}
     if(!FocusedPickup)
@@ -280,10 +294,10 @@ bool AHSCharacter::GetInteractionPromptLocation(FVector& Position) const
     const auto* PC=Cast<AHSPlayerController>(GetController());
     const auto* Target=FocusedInteraction.Get();
     if(!PC || PC->IsGameplayLocked() || PC->IsInspecting() || PC->IsMouseMode() || !IsValid(Target) || Target->IsHidden() || !Target->GetActorEnableCollision()) return false;
-    if(FVector::Dist(GetActorLocation(),Target->GetActorLocation())>GetDefault<UHSSettings>()->PickupDistance) return false;
     if(const auto* Painting=Cast<AHSSwapPainting>(Target);Painting && Painting->bSwapping) return false;
     const auto* PromptMesh=Target->FindComponentByClass<UMeshComponent>();
     if(!PromptMesh || !PromptMesh->IsVisible()) return false;
+    if(FVector::Dist(GetActorLocation(),PromptMesh->Bounds.Origin)>GetDefault<UHSSettings>()->PickupDistance) return false;
     Position=PromptMesh->Bounds.Origin+FVector(0,0,PromptMesh->Bounds.BoxExtent.Z+12.f);return true;
 }
 

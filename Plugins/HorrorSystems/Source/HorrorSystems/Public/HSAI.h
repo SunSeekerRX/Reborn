@@ -19,6 +19,8 @@ class HORRORSYSTEMS_API AHSMonster : public ACharacter
     GENERATED_BODY()
 public:
     UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Pursuit") FName HomeRoom;
+    UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Pursuit") bool bPursuitEnabled=true;
+    UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Pursuit") bool bUseStoryPressure=false;
     AHSMonster();
     UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Vision") TObjectPtr<class UPointLightComponent> RedAuraLight;
     virtual void BeginPlay() override;

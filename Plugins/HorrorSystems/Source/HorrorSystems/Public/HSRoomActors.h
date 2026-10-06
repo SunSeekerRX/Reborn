@@ -6,6 +6,7 @@
 class UBoxComponent;
 class UStaticMeshComponent;
 class UCameraComponent;
+class UPointLightComponent;
 class UHSRoomRules;
 class UHSProgression;
 class AHSCharacter;
@@ -58,6 +59,7 @@ public:
     AHSWindowSequence();
     virtual void Tick(float Dt) override;
     UPROPERTY(VisibleAnywhere,BlueprintReadOnly) TObjectPtr<UCameraComponent> Camera;
+    UPROPERTY(VisibleAnywhere,BlueprintReadOnly) TObjectPtr<UPointLightComponent> WindowFill;
     UPROPERTY(EditAnywhere,BlueprintReadWrite) FVector CameraOffset=FVector(0,350,175);
     // Local-space points between the player and the window; used in both directions.
     UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Camera") TArray<FVector> CameraWaypoints;

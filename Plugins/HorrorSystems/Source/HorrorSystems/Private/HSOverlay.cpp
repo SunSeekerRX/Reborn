@@ -5,6 +5,8 @@
 #include "HSItemData.h"
 #include "HSProgression.h"
 #include "HSRoomActors.h"
+#include "HSStoryActors.h"
+#include "HSParticleTitle.h"
 #include "HSCharacter.h"
 #include "Widgets/Notifications/SProgressBar.h"
 #include "Kismet/GameplayStatics.h"
@@ -216,9 +218,7 @@ void SHSOverlay::Construct(const FArguments& Args)
             .HAlign(HAlign_Center).VAlign(VAlign_Center)
             [SNew(SVerticalBox)
                 +SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
-                [SNew(SBox).WidthOverride(480).HeightOverride(330)[SNew(SImage).Image(&MobiusBrush)]]
-                +SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0,-20,0,38)
-                [SNew(STextBlock).Text(FText::FromString(TEXT("REBORN"))).Font(Font(54)).ColorAndOpacity(FLinearColor(.83f,.9f,.86f,1))]
+                [SNew(SBox).WidthOverride(640).HeightOverride(440)[SNew(SHSParticleTitle)]]
                 +SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
                 [SNew(SBox).WidthOverride(240).HeightOverride(48)[SNew(SButton).HAlign(HAlign_Center).VAlign(VAlign_Center)
                     .IsEnabled_Lambda([this]{return Controller.IsValid() && !Controller->GetSession()->bWhiteTransition;})
@@ -231,6 +231,11 @@ void SHSOverlay::Construct(const FArguments& Args)
                     [SNew(STextBlock).Text(FText::FromString(TEXT("退出游戏"))).Font(Font(18))]]]
             ]
         ]
+        +SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Bottom).Padding(20,0,20,140)
+        [SNew(STextBlock).Text_Lambda([this]{return Controller.IsValid()?Controller->GetSubtitle():FText::GetEmpty();})
+            .Font(Font(21)).ColorAndOpacity(FLinearColor::White).ShadowOffset(FVector2D(1,2)).ShadowColorAndOpacity(FLinearColor::Black)
+            .Justification(ETextJustify::Center).WrapTextAt(900)
+            .Visibility_Lambda([this]{return Controller.IsValid() && !Controller->GetSession()->bTitleScreen && !Controller->GetSubtitle().IsEmpty()?EVisibility::HitTestInvisible:EVisibility::Collapsed;})]
         +SOverlay::Slot()
         [SNew(SBorder).Visibility_Lambda([this]{return EndTime()>0?EVisibility::Visible:EVisibility::Collapsed;})
             .BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.015f,.02f,.025f,1))
@@ -242,7 +247,7 @@ void SHSOverlay::Construct(const FArguments& Args)
             ]
         ]
         +SOverlay::Slot()
-        [SNew(SBorder).Visibility_Lambda([this]{return Controller.IsValid() && Controller->GetSession()->IsDefeated()?EVisibility::Visible:EVisibility::Collapsed;})
+        [SNew(SBorder).Visibility_Lambda([this]{return Controller.IsValid() && Controller->GetSession()->IsDefeated() && !Controller->GetSession()->bDeathTransition?EVisibility::Visible:EVisibility::Collapsed;})
             .BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.015f,.02f,.025f,.94f))
             .HAlign(HAlign_Center).VAlign(VAlign_Center)
             [SNew(SVerticalBox)
@@ -259,7 +264,7 @@ void SHSOverlay::Construct(const FArguments& Args)
 bool SHSOverlay::CinematicPlaying() const
 { auto* D=Controller.IsValid()?AHSRoomDirector::Find(Controller->GetWorld()):nullptr; return D && D->Progress()->bCinematic; }
 float SHSOverlay::EndTime() const
-{ auto* D=Controller.IsValid()?AHSRoomDirector::Find(Controller->GetWorld()):nullptr; return D?D->EndingTime:0.f; }
+{ auto* D=Controller.IsValid()?AHSRoomDirector::Find(Controller->GetWorld()):nullptr; return D && !Cast<AHSStoryDirector>(D)?D->EndingTime:0.f; }
 EVisibility SHSOverlay::GameplayVisibility() const { return CinematicPlaying() || EndTime()>0 || (Controller.IsValid() && (Controller->GetSession()->bTitleScreen || Controller->GetSession()->IsDefeated()))?EVisibility::Collapsed:EVisibility::SelfHitTestInvisible; }
 FText SHSOverlay::CountdownText() const
 {
@@ -273,6 +278,14 @@ FText SHSOverlay::ClueText() const
     auto* D=Controller.IsValid()?AHSRoomDirector::Find(Controller->GetWorld()):nullptr;
     if(!D || !D->Rules) return FText::GetEmpty();
     const auto* P=D->Progress(); const auto* R=D->TravelRoute();
+    if(const auto* Story=Cast<AHSStoryDirector>(D))
+    {
+        FString Text=FString::Printf(TEXT("第 %d 关 · %s\n\n%s"),P->Stage,*D->Rules->RoomName.ToString(),*Story->MissionText().ToString());
+        if(P->bCluePanelUnlocked)
+            for(const auto& Pair:TArray<TPair<FName,FName>>{{TEXT("RoomA"),TEXT("Clue_A")},{TEXT("RoomB"),TEXT("Clue_B")},{TEXT("RoomC"),TEXT("Testament_C")}})
+                Text+=FString::Printf(TEXT("\n%s  %s"),P->HasStageClue(2,Pair.Key,Pair.Value)?TEXT("■"):TEXT("□"),*Pair.Key.ToString().Replace(TEXT("Room"),TEXT("房间 ")));
+        return FText::FromString(Text);
+    }
     FString Text=FString::Printf(TEXT("%s  ·  阶段 %d\n\n线索"),*D->Rules->RoomName.ToString(),P->Stage);
     if(D->bReturnToSafeAfterObjective)
         Text=FString::Printf(TEXT("%s  ·  第 %d 关\n\n任务：%s\n\n线索"),*D->Rules->RoomName.ToString(),P->Stage,D->bSafeTravelReady?TEXT("进入白光传送门"):D->bObjectiveAcquired?TEXT("赶紧返回安全屋"):TEXT("寻找关键物品"));

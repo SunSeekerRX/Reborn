@@ -10,6 +10,9 @@ struct FHSRoomRoute
 {
     GENERATED_BODY()
     UPROPERTY(EditAnywhere,BlueprintReadWrite) int32 Stage=1;
+    UPROPERTY(EditAnywhere,BlueprintReadWrite) int32 RequiredStoryStep=-1;
+    UPROPERTY(EditAnywhere,BlueprintReadWrite) int32 NextStoryStep=-1;
+    UPROPERTY(EditAnywhere,BlueprintReadWrite) bool bRequireAllStage2Clues=false;
     UPROPERTY(EditAnywhere,BlueprintReadWrite) FName TargetRoom;
     UPROPERTY(EditAnywhere,BlueprintReadWrite) TSoftObjectPtr<UWorld> Destination;
     UPROPERTY(EditAnywhere,BlueprintReadWrite) TArray<FName> RequiredClues;
@@ -28,7 +31,7 @@ public:
     UPROPERTY(EditAnywhere,BlueprintReadOnly,meta=(ClampMin="1")) float Duration=60.f;
     UPROPERTY(EditAnywhere,BlueprintReadOnly) TArray<FHSRoomRoute> Routes;
     UPROPERTY(EditAnywhere,BlueprintReadOnly) TMap<FName,FText> ClueLabels;
-    const FHSRoomRoute* RouteFor(int32 Stage) const;
+    const FHSRoomRoute* RouteFor(int32 Stage,int32 StoryStep=-1) const;
 };
 
 UCLASS()
@@ -37,6 +40,11 @@ class HORRORSYSTEMS_API UHSProgression : public UGameInstanceSubsystem
     GENERATED_BODY()
 public:
     UPROPERTY(VisibleAnywhere,BlueprintReadOnly) int32 Stage=1;
+    UPROPERTY(VisibleAnywhere,BlueprintReadOnly) int32 StoryStep=0;
+    UPROPERTY(VisibleAnywhere,BlueprintReadOnly) bool bFinalChaseStarted=false;
+    UPROPERTY(VisibleAnywhere,BlueprintReadOnly) bool bCluePanelUnlocked=false;
+    UPROPERTY() TSet<FName> ReadItems;
+    UPROPERTY() TMap<FName,int32> MapVisits;
     UPROPERTY(VisibleAnywhere,BlueprintReadOnly) FName ActiveRoom;
     UPROPERTY(VisibleAnywhere,BlueprintReadOnly) bool bTimerRunning=false;
     UPROPERTY(VisibleAnywhere,BlueprintReadOnly) bool bCinematic=false;
@@ -52,6 +60,7 @@ public:
     UFUNCTION(BlueprintPure,Category="Progression") float GetRemaining() const;
     UFUNCTION(BlueprintCallable,Category="Progression") void CollectClue(FName Clue);
     UFUNCTION(BlueprintPure,Category="Progression") bool HasClue(FName Clue) const;
+    UFUNCTION(BlueprintPure,Category="Progression") bool HasStageClue(int32 InStage,FName Room,FName Clue) const;
     bool CanExit(const FHSRoomRoute& Route) const;
     void CommitExit(const FHSRoomRoute& Route);
     UFUNCTION(BlueprintCallable,Category="Progression") void RollbackRoom();
@@ -63,4 +72,6 @@ private:
     UPROPERTY() TSet<FString> EntryPickups;
     UPROPERTY() TSet<FString> EntryClues;
     int32 EntrySelection=0;
+    bool bEntryFinalChaseStarted=false;
+    UPROPERTY() TSet<FName> EntryReadItems;
 };

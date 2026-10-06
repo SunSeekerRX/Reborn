@@ -65,6 +65,10 @@ void AHSMonster::BeginPlay()
 void AHSMonster::Tick(float Dt)
 {
     Super::Tick(Dt);
+    const auto* Progress=GetGameInstance()->GetSubsystem<UHSProgression>();
+    const bool Audible=bPursuitEnabled && !IsHidden() && !Progress->bCinematic && Progress->bTimerRunning && (HomeRoom.IsNone() || HomeRoom==Progress->ActiveRoom);
+    if(!Audible && PresenceAudio->IsPlaying()) PresenceAudio->Stop();
+    else if(Audible && PresenceSound && !PresenceAudio->IsPlaying()) PresenceAudio->Play();
     StaggerRemaining=FMath::Max(0.f,StaggerRemaining-Dt);
     RecoilRemaining=FMath::Max(0.f,RecoilRemaining-Dt);
     if(!bContactArmed && StaggerRemaining<=0.f)
@@ -86,7 +90,7 @@ void AHSMonster::OnCapsuleHit(UPrimitiveComponent*,AActor* Other,UPrimitiveCompo
 { TryContactPlayer(Cast<AHSCharacter>(Other)); }
 bool AHSMonster::TryContactPlayer(AHSCharacter* Player)
 {
-    if(!bCanDamagePlayer || bCinematicActor || !bContactArmed || StaggerRemaining>0.f || !Player || !Player->ReceiveMonsterContact(this)) return false;
+    if(!bPursuitEnabled || !bCanDamagePlayer || bCinematicActor || !bContactArmed || StaggerRemaining>0.f || !Player || !Player->ReceiveMonsterContact(this)) return false;
     bContactArmed=false; StaggerRemaining=StaggerDuration; RecoilRemaining=.25f;
     if(auto* AI=Cast<AAIController>(GetController())) AI->StopMovement();
     FVector Away=(GetActorLocation()-Player->GetActorLocation()).GetSafeNormal2D();
@@ -126,10 +130,11 @@ void AHSPursuitController::Tick(float Dt)
 {
     Super::Tick(Dt);
     auto* Monster=Cast<AHSMonster>(GetPawn());
-    if(Monster && Monster->bCinematicActor) return;
+    if(Monster && (Monster->bCinematicActor || !Monster->bPursuitEnabled)) {StopMovement();return;}
     const auto* Progress=GetGameInstance()->GetSubsystem<UHSProgression>();
     if(!Monster || !IsValid(Target) || GetGameInstance()->GetSubsystem<UHSWorldState>()->IsDefeated() || Monster->bCinematicActor || (!Monster->HomeRoom.IsNone() && Monster->HomeRoom!=Progress->ActiveRoom) || Progress->bCinematic || Progress->bCompleted || (!Progress->ActiveRoom.IsNone() && !Progress->bTimerRunning)) { StopMovement(); return; }
     if(Monster->RecoilRemaining>0.f) return;
+    if(GetGameInstance()->GetSubsystem<UHSWorldState>()->IsInSafety(Target)) {StopMovement();return;}
     const auto* S=GetDefault<UHSSettings>();
     const float Distance=FVector::Dist2D(Target->GetActorLocation(),Monster->GetActorLocation());
     Monster->DistanceToPlayer=Distance;
@@ -150,6 +155,15 @@ void AHSPursuitController::Tick(float Dt)
             && Screen.X>=0 && Screen.Y>=0 && Screen.X<W && Screen.Y<H && PC->LineOfSightTo(Monster);
         if(Monster->bAutomaticSpeed) Monster->MovementState=Visible || Distance<=S->NearRadius ? EHSMovementState::Slow : Distance>=S->FarRadius ? EHSMovementState::Fast : EHSMovementState::Normal;
         Desired=Monster->MovementState==EHSMovementState::Slow?S->NearSpeed:Monster->MovementState==EHSMovementState::Fast?S->FarSpeed:S->NormalSpeed;
+        if(Monster->bUseStoryPressure)
+        {
+            if(Progress->Stage==2) Desired=Monster->MovementState==EHSMovementState::Fast?260.f:Monster->MovementState==EHSMovementState::Normal?185.f:135.f;
+            else if(Progress->Stage==3)
+            {
+                Monster->MovementState=Distance>S->HiddenRadius && !Visible?EHSMovementState::Fast:Distance<=S->ClearRadius?EHSMovementState::Slow:EHSMovementState::Normal;
+                Desired=Monster->MovementState==EHSMovementState::Fast?600.f:Monster->MovementState==EHSMovementState::Normal?390.f:330.f;
+            }
+        }
         auto* Move=Monster->GetCharacterMovement();
         Move->MaxWalkSpeed=Monster->StaggerRemaining>0.f?Monster->StaggerSpeed:FMath::FInterpConstantTo(Move->MaxWalkSpeed,Desired,Dt,650.f);
         Monster->PursuitState=bPathBlocked ? EHSPursuitState::Blocked : Distance>S->FarRadius && !Visible ? EHSPursuitState::CatchUp : EHSPursuitState::Approach;
@@ -173,7 +187,7 @@ void UBTTask_HSPursue::TickTask(UBehaviorTreeComponent& Owner,uint8* Memory,floa
     auto* Monster=Cast<AHSMonster>(AI->GetPawn());
     const auto* Progress=AI->GetGameInstance()->GetSubsystem<UHSProgression>();
     if(Monster && Monster->RecoilRemaining>0.f) return;
-    if(!Monster || AI->GetGameInstance()->GetSubsystem<UHSWorldState>()->IsDefeated() || Monster->bCinematicActor || (!Monster->HomeRoom.IsNone() && Monster->HomeRoom!=Progress->ActiveRoom) || Monster->PursuitState==EHSPursuitState::Waiting || Progress->bCinematic || Progress->bCompleted || (!Progress->ActiveRoom.IsNone() && !Progress->bTimerRunning)) { AI->StopMovement(); return; }
+    if(!Monster || !Monster->bPursuitEnabled || AI->GetGameInstance()->GetSubsystem<UHSWorldState>()->IsDefeated() || AI->GetGameInstance()->GetSubsystem<UHSWorldState>()->IsInSafety(AI->Target) || Monster->bCinematicActor || (!Monster->HomeRoom.IsNone() && Monster->HomeRoom!=Progress->ActiveRoom) || Monster->PursuitState==EHSPursuitState::Waiting || Progress->bCinematic || Progress->bCompleted || (!Progress->ActiveRoom.IsNone() && !Progress->bTimerRunning)) { AI->StopMovement(); return; }
     float& Timer=*reinterpret_cast<float*>(Memory); Timer-=Dt;
     if(Timer>0) return; Timer=.3f;
     FAIMoveRequest Request;
