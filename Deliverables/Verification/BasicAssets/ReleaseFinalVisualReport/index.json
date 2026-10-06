@@ -1,0 +1,105 @@
+﻿{
+	"devices": [
+		{
+			"deviceName": "DESKTOP-3ORPM6E",
+			"instance": "082CB9154C880D9D28801F9090679E9F",
+			"instanceName": "DESKTOP-3ORPM6E-42416",
+			"platform": "WindowsEditor",
+			"oSVersion": "Windows 11 (24H2) [10.0.26100.6899] ",
+			"model": "Default",
+			"gPU": "NVIDIA GeForce RTX 5060 Ti",
+			"cPUModel": "Intel(R) Core(TM) i5-14600KF",
+			"rAMInGB": 32,
+			"renderMode": "D3D12_SM5",
+			"rHI": "D3D12 (SM5)",
+			"appInstanceLog": ""
+		}
+	],
+	"reportCreatedOn": "2026.10.05-13.35.00",
+	"succeeded": 1,
+	"succeededWithWarnings": 0,
+	"failed": 0,
+	"notRun": 0,
+	"inProcess": 0,
+	"totalDuration": 9.1953592300415039,
+	"comparisonExported": false,
+	"comparisonExportDirectory": "",
+	"tests": [
+		{
+			"testDisplayName": "Interactions",
+			"fullTestPath": "HorrorSystems.Basic.Interactions",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"082CB9154C880D9D28801F9090679E9F"
+			],
+			"duration": 9.1953592300415039,
+			"dateTime": "2026.10.05-13.34.51",
+			"entries": [
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Window camera=X=-70.000 Y=850.000 Z=270.000 target=X=170.000 Y=850.000 Z=192.000 sightHit=None",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-13.34.54"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Focus target=HSInspectTrigger_0 actual=HSInspectTrigger_0 hit=HSInspectTrigger_0 player=X=-760.000 Y=1070.000 Z=198.000 view=X=-748.000 Y=1070.000 Z=266.000 targetcenter=X=-930.000 Y=1070.000 Z=220.000",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-13.34.55"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Book sweep hit=HSCollapsingObstacle_0 center=X=-830.000 Y=800.000 Z=160.000 extent=X=150.000 Y=200.000 Z=60.000 profile=BlockAllDynamic",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-13.34.59"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Focus target=HSSwapPainting_0 actual=HSSwapPainting_0 hit=HSSwapPainting_0 player=X=-925.000 Y=200.000 Z=198.000 view=X=-935.303 Y=193.849 Z=266.000 targetcenter=X=-1095.000 Y=200.000 Z=350.000",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-13.34.59"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Focus target=HSSwapPainting_1 actual=HSSwapPainting_1 hit=HSSwapPainting_1 player=X=-925.000 Y=340.000 Z=198.000 view=X=-936.991 Y=340.462 Z=266.000 targetcenter=X=-1095.000 Y=340.000 Z=350.000",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-13.34.59"
+				}
+			],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		}
+	]
+}

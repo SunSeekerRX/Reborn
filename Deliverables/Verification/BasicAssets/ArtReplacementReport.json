@@ -1,0 +1,634 @@
+[
+  {
+    "map": "Basic_roomA",
+    "replacements": [
+      {
+        "label": "cabinet",
+        "type": "StaticMeshActor",
+        "group": "Drawer",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Drawer_436a0c0e1eb4.SM_Drawer_436a0c0e1eb4",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_2a06e12f2c37.SM_Locker_2a06e12f2c37",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet2",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_8b935c9121f7.SM_Locker_8b935c9121f7",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet3",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_67be5848d077.SM_Locker_67be5848d077",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet4",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_6a6bcda7dd5c.SM_Locker_6a6bcda7dd5c",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "Reborn_Bookshelf_A",
+        "type": "HSCollapsingObstacle",
+        "group": "Bookshelf",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Bookshelf_e9374e40a5e5.SM_Bookshelf_e9374e40a5e5",
+        "components_preserved": [
+          "ObstacleMesh"
+        ]
+      },
+      {
+        "label": "Reborn_Drawer_A",
+        "type": "HSMovableProp",
+        "group": "Drawer",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Drawer_3b0d46c26d16.SM_Drawer_3b0d46c26d16",
+        "components_preserved": [
+          "MovableMesh"
+        ]
+      }
+    ]
+  },
+  {
+    "map": "Basic_roomB",
+    "replacements": [
+      {
+        "label": "iron cabinet",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_08f4a9a9fb47.SM_Locker_08f4a9a9fb47",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet2",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_08f4a9a9fb47.SM_Locker_08f4a9a9fb47",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet3",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_fe3a33fd7f56.SM_Locker_fe3a33fd7f56",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet4",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_139fe6f35804.SM_Locker_139fe6f35804",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "Sofa",
+        "type": "StaticMeshActor",
+        "group": "Sofa",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Sofa_fb52f1bbf73b.SM_Sofa_fb52f1bbf73b",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "cabinet2",
+        "type": "StaticMeshActor",
+        "group": "Drawer",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Drawer_b36e0110636a.SM_Drawer_b36e0110636a",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "cabinet3",
+        "type": "StaticMeshActor",
+        "group": "Drawer",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Drawer_aaa0a630fa06.SM_Drawer_aaa0a630fa06",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet5",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_918b021d6f1d.SM_Locker_918b021d6f1d",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet6",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_ff45053a135e.SM_Locker_ff45053a135e",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet7",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_ba5591df63b0.SM_Locker_ba5591df63b0",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet8",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_0b84dba58026.SM_Locker_0b84dba58026",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "Reborn_Bookshelf_B",
+        "type": "HSCollapsingObstacle",
+        "group": "Bookshelf",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Bookshelf_fefeeff8f30e.SM_Bookshelf_fefeeff8f30e",
+        "components_preserved": [
+          "ObstacleMesh"
+        ]
+      },
+      {
+        "label": "Reborn_Drawer_B",
+        "type": "HSMovableProp",
+        "group": "Drawer",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Drawer_2186f5f09161.SM_Drawer_2186f5f09161",
+        "components_preserved": [
+          "MovableMesh"
+        ]
+      }
+    ]
+  },
+  {
+    "map": "Basic_roomC",
+    "replacements": [
+      {
+        "label": "iron cabinet",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_2fa4bfe79e52.SM_Locker_2fa4bfe79e52",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet2",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_9ac57686355d.SM_Locker_9ac57686355d",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet3",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_a7e71cdf2f3d.SM_Locker_a7e71cdf2f3d",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet4",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_eaf03d5c9548.SM_Locker_eaf03d5c9548",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "cabinet2",
+        "type": "StaticMeshActor",
+        "group": "Drawer",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Drawer_f964d56d9895.SM_Drawer_f964d56d9895",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "cabinet3",
+        "type": "StaticMeshActor",
+        "group": "Drawer",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Drawer_f417f68c7876.SM_Drawer_f417f68c7876",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet5",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_7e79ff050013.SM_Locker_7e79ff050013",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet6",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_28861737f5c8.SM_Locker_28861737f5c8",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet7",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_20d62698e7ea.SM_Locker_20d62698e7ea",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet8",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_9c192699387d.SM_Locker_9c192699387d",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "Reborn_Bookshelf_C",
+        "type": "HSCollapsingObstacle",
+        "group": "Bookshelf",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Bookshelf_4274d67fbaef.SM_Bookshelf_4274d67fbaef",
+        "components_preserved": [
+          "ObstacleMesh"
+        ]
+      },
+      {
+        "label": "Reborn_Drawer_C",
+        "type": "HSMovableProp",
+        "group": "Drawer",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Drawer_c20f6e893705.SM_Drawer_c20f6e893705",
+        "components_preserved": [
+          "MovableMesh"
+        ]
+      }
+    ]
+  },
+  {
+    "map": "Basic_roomABC",
+    "replacements": [
+      {
+        "label": "iron cabinet",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_b972e25801b1.SM_Locker_b972e25801b1",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet2",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_2c3c8e5e970c.SM_Locker_2c3c8e5e970c",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet3",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_b972e25801b1.SM_Locker_b972e25801b1",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet4",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_e107d96ab316.SM_Locker_e107d96ab316",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "cabinet2",
+        "type": "StaticMeshActor",
+        "group": "Drawer",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Drawer_8f3c5f48bf2c.SM_Drawer_8f3c5f48bf2c",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "cabinet3",
+        "type": "StaticMeshActor",
+        "group": "Drawer",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Drawer_4cc53ebcc855.SM_Drawer_4cc53ebcc855",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet5",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_34c047decfb7.SM_Locker_34c047decfb7",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet6",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_1c0fc1ef452b.SM_Locker_1c0fc1ef452b",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet7",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_f91b99082339.SM_Locker_f91b99082339",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet8",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_fe0f368f9d0b.SM_Locker_fe0f368f9d0b",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "cabinet5",
+        "type": "StaticMeshActor",
+        "group": "Drawer",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Drawer_c1056fcebac0.SM_Drawer_c1056fcebac0",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "cabinet6",
+        "type": "StaticMeshActor",
+        "group": "Drawer",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Drawer_e73901a3590e.SM_Drawer_e73901a3590e",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet9",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_a4363eeb23ca.SM_Locker_a4363eeb23ca",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet10",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_b53840436d66.SM_Locker_b53840436d66",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet11",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_491d14ec5a60.SM_Locker_491d14ec5a60",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet12",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_7da29904ab5e.SM_Locker_7da29904ab5e",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet13",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_3e4321a435d6.SM_Locker_3e4321a435d6",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet14",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_76eceb60b4d8.SM_Locker_76eceb60b4d8",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet15",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_c0706f80f30c.SM_Locker_c0706f80f30c",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet16",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_1487ba032754.SM_Locker_1487ba032754",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet18",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_9edd0981d8cd.SM_Locker_9edd0981d8cd",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet19",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_ec59c394ab90.SM_Locker_ec59c394ab90",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet20",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_2582c7d6361a.SM_Locker_2582c7d6361a",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet21",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_eee9566f6451.SM_Locker_eee9566f6451",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet22",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_903efdba4070.SM_Locker_903efdba4070",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet23",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_74594144e374.SM_Locker_74594144e374",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "iron cabinet24",
+        "type": "StaticMeshActor",
+        "group": "Locker",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Locker_50510085785b.SM_Locker_50510085785b",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "cabinet7",
+        "type": "StaticMeshActor",
+        "group": "Drawer",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Drawer_834e6fdb7fd4.SM_Drawer_834e6fdb7fd4",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "cabinet8",
+        "type": "StaticMeshActor",
+        "group": "Drawer",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Drawer_ee120361b97a.SM_Drawer_ee120361b97a",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "cabinet9",
+        "type": "StaticMeshActor",
+        "group": "Drawer",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Drawer_834e6fdb7fd4.SM_Drawer_834e6fdb7fd4",
+        "components_preserved": [
+          "StaticMeshComponent0"
+        ]
+      },
+      {
+        "label": "Reborn_Bookshelf_A",
+        "type": "HSCollapsingObstacle",
+        "group": "Bookshelf",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Bookshelf_1e3bf03dca8f.SM_Bookshelf_1e3bf03dca8f",
+        "components_preserved": [
+          "ObstacleMesh"
+        ]
+      },
+      {
+        "label": "Reborn_Bookshelf_B",
+        "type": "HSCollapsingObstacle",
+        "group": "Bookshelf",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Bookshelf_f3ea2f628425.SM_Bookshelf_f3ea2f628425",
+        "components_preserved": [
+          "ObstacleMesh"
+        ]
+      },
+      {
+        "label": "Reborn_Bookshelf_C",
+        "type": "HSCollapsingObstacle",
+        "group": "Bookshelf",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Bookshelf_dbba204fab25.SM_Bookshelf_dbba204fab25",
+        "components_preserved": [
+          "ObstacleMesh"
+        ]
+      },
+      {
+        "label": "Reborn_Drawer_A",
+        "type": "HSMovableProp",
+        "group": "Drawer",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Drawer_7d3bf539d0d1.SM_Drawer_7d3bf539d0d1",
+        "components_preserved": [
+          "MovableMesh"
+        ]
+      },
+      {
+        "label": "Reborn_Drawer_B",
+        "type": "HSMovableProp",
+        "group": "Drawer",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Drawer_b032ad1e9079.SM_Drawer_b032ad1e9079",
+        "components_preserved": [
+          "MovableMesh"
+        ]
+      },
+      {
+        "label": "Reborn_Drawer_C",
+        "type": "HSMovableProp",
+        "group": "Drawer",
+        "mesh": "/HorrorSystems/Art/Fitted/SM_Drawer_938c85868643.SM_Drawer_938c85868643",
+        "components_preserved": [
+          "MovableMesh"
+        ]
+      }
+    ]
+  }
+]

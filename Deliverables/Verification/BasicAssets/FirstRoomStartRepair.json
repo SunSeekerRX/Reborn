@@ -1,0 +1,11 @@
+{
+  "map": "Basic_roomA",
+  "editor_only_shells": [
+    "CubeGridToolOutput2"
+  ],
+  "spawn": [
+    -200,
+    -1020,
+    292
+  ]
+}

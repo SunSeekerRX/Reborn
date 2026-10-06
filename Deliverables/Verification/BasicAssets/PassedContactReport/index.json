@@ -1,0 +1,57 @@
+﻿{
+	"devices": [
+		{
+			"deviceName": "DESKTOP-3ORPM6E",
+			"instance": "C519B923494FA793E1800EA1EF615939",
+			"instanceName": "DESKTOP-3ORPM6E-45308",
+			"platform": "WindowsEditor",
+			"oSVersion": "Windows 11 (24H2) [10.0.26100.6899] ",
+			"model": "Default",
+			"gPU": "NVIDIA GeForce RTX 5060 Ti",
+			"cPUModel": "Intel(R) Core(TM) i5-14600KF",
+			"rAMInGB": 32,
+			"renderMode": "SM6",
+			"rHI": "",
+			"appInstanceLog": ""
+		}
+	],
+	"reportCreatedOn": "2026.10.05-13.26.44",
+	"succeeded": 1,
+	"succeededWithWarnings": 0,
+	"failed": 0,
+	"notRun": 0,
+	"inProcess": 0,
+	"totalDuration": 8.0015583038330078,
+	"comparisonExported": false,
+	"comparisonExportDirectory": "",
+	"tests": [
+		{
+			"testDisplayName": "SceneOneContact",
+			"fullTestPath": "HorrorSystems.Combat.SceneOneContact",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"C519B923494FA793E1800EA1EF615939"
+			],
+			"duration": 8.0015583038330078,
+			"dateTime": "2026.10.05-13.26.36",
+			"entries": [
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Contact navigation: floor=X=-850.000 Y=500.000 Z=100.000 actor=StaticMeshActor_5 monster=X=-800.000 Y=1100.000 Z=194.150 player=X=-850.000 Y=500.000 Z=194.000 path=1 partial=0 building=1",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.05-13.26.44"
+				}
+			],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		}
+	]
+}
