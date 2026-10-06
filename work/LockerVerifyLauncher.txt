@@ -1,0 +1,136 @@
+Using bundled DotNet SDK version: 10.0 win-x64
+Running UnrealBuildTool: dotnet "..\..\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.dll" -Mode=ValidatePlatforms -OutputSDKs  -AllPlatforms  -project="E:/UE5 Project/Reborn/Reborn.uproject" -log="E:/UE5 Project/Reborn/Saved/Logs/AutoSDKInfo.txt" -verbose -timestamps
+[2026.10.06-08.40.47:885][  0]LogInit: Display: Running engine for game: Reborn
+[2026.10.06-08.40.47:885][  0]LogCore: Warning: UTS: Unreal Trace Server process returned an error (0xc0000409)
+[2026.10.06-08.40.47:885][  0]LogCore: Display: Requested channels: 'cpu,gpu,frame,log,bookmark,screenshot,region'
+[2026.10.06-08.40.47:885][  0]LogTrace: Display: Control listening on port 1985
+[2026.10.06-08.40.47:885][  0]LogCsvProfiler: Display: Metadata set : platform="Windows"
+[2026.10.06-08.40.47:885][  0]LogCsvProfiler: Display: Metadata set : config="Development"
+[2026.10.06-08.40.47:885][  0]LogCsvProfiler: Display: Metadata set : buildversion="++UE5+Release-5.8-CL-58210709"
+[2026.10.06-08.40.47:885][  0]LogCsvProfiler: Display: Metadata set : engineversion="5.8.3-58210709+++UE5+Release-5.8"
+[2026.10.06-08.40.47:885][  0]LogCsvProfiler: Display: Metadata set : enginereleaseversion="5.8.3"
+[2026.10.06-08.40.47:885][  0]LogCsvProfiler: Display: Metadata set : os="Windows 11 (25H2) [10.0.26200.9457] "
+[2026.10.06-08.40.47:885][  0]LogCsvProfiler: Display: Metadata set : cpu="GenuineIntel|13th Gen Intel(R) Core(TM) i9-13900HX"
+[2026.10.06-08.40.47:885][  0]LogCsvProfiler: Display: Metadata set : pgoenabled="0"
+[2026.10.06-08.40.47:885][  0]LogCsvProfiler: Display: Metadata set : pgoprofilingenabled="0"
+[2026.10.06-08.40.47:885][  0]LogCsvProfiler: Display: Metadata set : ltoenabled="0"
+[2026.10.06-08.40.47:885][  0]LogCsvProfiler: Display: Metadata set : asan="0"
+[2026.10.06-08.40.47:885][  0]LogCsvProfiler: Display: Metadata set : mergedmodules="0"
+[2026.10.06-08.40.47:885][  0]LogCsvProfiler: Display: Metadata set : compacttset="0"
+[2026.10.06-08.40.47:885][  0]LogCsvProfiler: Display: Metadata set : commandline="" "E:/UE5 Project/Reborn/Reborn.uproject" -run=pythonscript -script="E:/UE5 Project/Reborn/work/InspectLockerUE.py" -LockerAfterRepair -unattended -nop4 -nosplash -nullrhi -nosound -ddc=InstalledNoZenLocalFallback -LocalDataCachePath="E:/UE5 Project/Reborn/DerivedDataCache/LockerRepair" -abslog="E:/UE5 Project/Reborn/work/LockerVerify.log"""
+[2026.10.06-08.40.47:885][  0]LogCsvProfiler: Display: Metadata set : loginid="fe32af884401c2167696299ddf502f40"
+[2026.10.06-08.40.47:885][  0]LogCsvProfiler: Display: Metadata set : llm="0"
+[2026.10.06-08.40.47:885][  0]LogCsvProfiler: Display: Metadata set : zenstreaming="0"
+[2026.10.06-08.40.47:885][  0]LogCsvProfiler: Display: Metadata set : systemresolution.resx="1280"
+[2026.10.06-08.40.47:885][  0]LogCsvProfiler: Display: Metadata set : systemresolution.resy="720"
+[2026.10.06-08.40.47:885][  0]LogFileManager: Warning: Error deleting file: C:/Users/doubl/AppData/Local/UnrealEngine/5.8/Saved/Config/WindowsEditor/EditorSettings.ini (Error Code 5)
+[2026.10.06-08.40.47:885][  0]LogAudio: Display: Audio Device Manager not initializing due to all audio being disabled. If this is not intentional, please check command line arguments for "-nosound".
+[2026.10.06-08.40.47:885][  0]LogConfig: Display: Loading IOS ini files took 0.04 seconds
+[2026.10.06-08.40.47:885][  0]LogConfig: Display: Loading Mac ini files took 0.04 seconds
+[2026.10.06-08.40.47:885][  0]LogConfig: Display: Loading Android ini files took 0.04 seconds
+[2026.10.06-08.40.47:885][  0]LogConfig: Display: Loading VulkanPC ini files took 0.04 seconds
+[2026.10.06-08.40.47:885][  0]LogConfig: Display: Loading TVOS ini files took 0.05 seconds
+[2026.10.06-08.40.47:885][  0]LogConfig: Display: Loading Unix ini files took 0.05 seconds
+[2026.10.06-08.40.47:885][  0]LogConfig: Display: Loading Windows ini files took 0.05 seconds
+[2026.10.06-08.40.47:885][  0]LogConfig: Display: Loading VisionOS ini files took 0.05 seconds
+[2026.10.06-08.40.47:885][  0]LogConfig: Display: Loading Linux ini files took 0.05 seconds
+[2026.10.06-08.40.47:885][  0]RenderDocPlugin: Display: RenderDoc plugin will not be loaded. Use '-AttachRenderDoc' on the cmd line or enable 'renderdoc.AutoAttach' in the plugin settings.
+[2026.10.06-08.40.47:885][  0]LogAnalytics: Display: Provider StudioTelemetry.Provider.Log is disabled for this application
+[2026.10.06-08.40.47:885][  0]LogAnalytics: Display: Provider StudioTelemetry.Provider.CSV is disabled for this application
+[2026.10.06-08.40.47:885][  0]LogAnalytics: Display: Provider StudioTelemetry.Provider.Horde is disabled for this application
+[2026.10.06-08.40.47:885][  0]LogAnalytics: Display: Provider StudioTelemetry.Provider.Log is disabled for this application
+[2026.10.06-08.40.47:885][  0]LogAnalytics: Display: Provider StudioTelemetry.Provider.CSV is disabled for this application
+[2026.10.06-08.40.47:885][  0]LogAnalytics: Display: Provider StudioTelemetry.Provider.Horde is disabled for this application
+[2026.10.06-08.40.47:885][  0]LogAsyncCompilation: Display: MemorySharingInfo: UsedMemory=358MiB, MaxMemoryAvailable=27967MiB
+[2026.10.06-08.40.47:885][  0]LogSsl: Warning: Unable to open ROOT certificate store. Platform provided certificates will not be used
+[2026.10.06-08.40.47:885][  0]LogStreaming: Display: AsyncLoading2 - Created: Async Loading Thread: false, Async Post Load: false, Multithreaded: false
+[2026.10.06-08.40.47:885][  0]LogHAL: Display: Platform has ~ 16 GB [16978403328 / 17179869184 / 16], which maps to Larger [LargestMinGB=32, LargerMinGB=12, DefaultMinGB=8, SmallerMinGB=6, SmallestMinGB=0)
+[2026.10.06-08.40.47:885][  0]LogCsvProfiler: Display: Metadata set : extradevelopmentmemorymb="0"
+[2026.10.06-08.40.47:885][  0]LogObj: Display: Attempting to load config data for Default__DownlinkBandwidthManagerConfig before the Class has been constructed/registered/linked (likely during module loading or early startup). This will result in the load silently failing and should be fixed.
+[2026.10.06-08.40.48:214][  0]LogObj: Display: Attempting to load config data for Default__SlateThemeManager before the Class has been constructed/registered/linked (likely during module loading or early startup). This will result in the load silently failing and should be fixed.
+[2026.10.06-08.40.48:298][  0]LogCsvProfiler: Display: Metadata set : verbatimrhiname="Null"
+[2026.10.06-08.40.48:298][  0]LogCsvProfiler: Display: Metadata set : rhiname="Null"
+[2026.10.06-08.40.48:298][  0]LogCsvProfiler: Display: Metadata set : rhifeaturelevel="SM6"
+[2026.10.06-08.40.48:298][  0]LogCsvProfiler: Display: Metadata set : shaderplatform="PCD3D_SM6"
+[2026.10.06-08.40.48:298][  0]LogCsvProfiler: Display: Metadata set : gpu=""
+[2026.10.06-08.40.48:298][  0]LogCsvProfiler: Display: Metadata set : gpudriver=""
+[2026.10.06-08.40.48:307][  0]LogTextureFormatASTC: Display: ASTCEnc version 5.0.1 library loaded
+[2026.10.06-08.40.48:307][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatASTC
+[2026.10.06-08.40.48:307][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatDXT
+[2026.10.06-08.40.48:308][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatETC2
+[2026.10.06-08.40.48:308][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatIntelISPCTexComp
+[2026.10.06-08.40.48:308][  0]LogTextureFormatOodle: Display: Oodle Texture TFO init; latest sdk version = 2.9.16
+[2026.10.06-08.40.48:308][  0]LogTextureFormatOodle: Display: Oodle Texture loading DLL: oo2tex_win64_2.9.16.dll
+[2026.10.06-08.40.48:309][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatOodle
+[2026.10.06-08.40.48:309][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatUncompressed
+[2026.10.06-08.40.48:327][  0]LogTargetPlatformManager: Display: Failed to SetupSDK for platform 'Android'
+[2026.10.06-08.40.48:337][  0]LogTargetPlatformManager: Display: Failed to SetupSDK for platform 'IOS'
+[2026.10.06-08.40.48:347][  0]LogTargetPlatformManager: Display: Failed to SetupSDK for platform 'Linux'
+[2026.10.06-08.40.48:358][  0]LogTargetPlatformManager: Display: Failed to SetupSDK for platform 'Mac'
+[2026.10.06-08.40.48:360][  0]LogTargetPlatformManager: Display: Failed to SetupSDK for platform 'TVOS'
+[2026.10.06-08.40.48:372][  0]LogTargetPlatformManager: Display: Loaded TargetPlatform 'Windows'
+[2026.10.06-08.40.48:372][  0]LogTargetPlatformManager: Display: Loaded TargetPlatform 'WindowsEditor'
+[2026.10.06-08.40.48:372][  0]LogTargetPlatformManager: Display: Loaded TargetPlatform 'WindowsServer'
+[2026.10.06-08.40.48:372][  0]LogTargetPlatformManager: Display: Loaded TargetPlatform 'WindowsClient'
+[2026.10.06-08.40.48:372][  0]LogTargetPlatformManager: Display: Building Assets For WindowsEditor
+[2026.10.06-08.40.48:377][  0]LogAudioDebug: Display: Lib vorbis DLL was dynamically loaded.
+[2026.10.06-08.40.48:666][  0]LogDerivedDataCache: Display: ../../../Engine/DerivedDataCache/Compressed.ddp: Opened pak cache for reading. (1670 MiB)
+[2026.10.06-08.40.48:670][  0]LogDerivedDataCache: Display: E:/UE5 Project/Reborn/DerivedDataCache/LockerRepair: Performance: Latency=0.01ms. RandomReadSpeed=2046.40MBs, RandomWriteSpeed=364.50MBs. Assigned SpeedClass 'Local'
+[2026.10.06-08.40.48:677][  0]LogUbaHorde: Display: UBA/Horde Configuration [Uba.Provider.Horde]: Not Enabled
+[2026.10.06-08.40.48:682][  0]LogXGEController: Display: Initialized XGE controller. XGE tasks will be spawned on this machine.
+[2026.10.06-08.40.48:682][  0]LogShaderCompilers: Display: Using XGE Controller for shader compilation
+[2026.10.06-08.40.48:687][  0]LogShaderCompilers: Display: Compiling shader autogen file: ../../../../../UE5 Project/Reborn/Intermediate/ShaderAutogen/PCD3D_SM6/AutogenShaderHeaders.ush
+[2026.10.06-08.40.48:687][  0]LogShaderCompilers: Display: Autogen file is unchanged, skipping write.
+[2026.10.06-08.40.49:081][  0]LogEditorDomain: Display: EditorDomain is Disabled
+[2026.10.06-08.40.49:305][  0]LogDeviceProfileManager: Display: Deviceprofile LinuxArm64Editor not found.
+[2026.10.06-08.40.49:305][  0]LogDeviceProfileManager: Display: Deviceprofile LinuxArm64 not found.
+[2026.10.06-08.40.49:349][  0]LogCsvProfiler: Display: Metadata set : deviceprofile="WindowsEditor"
+[2026.10.06-08.40.49:351][  0]LogStreaming: Display: FlushAsyncLoading(1): 1 QueuedPackages, 0 AsyncPackages
+[2026.10.06-08.40.49:362][  0]LogTextureEncodingSettings: Display: Texture Encode Speed: Final (cook).
+[2026.10.06-08.40.49:362][  0]LogTextureEncodingSettings: Display: Oodle Texture Encode Speed settings: Fast: RDO Off Lambda=0, Effort=Normal Final: RDO Off Lambda=0, Effort=Normal
+[2026.10.06-08.40.49:362][  0]LogTextureEncodingSettings: Display: Shared linear texture encoding: Disabled
+[2026.10.06-08.40.49:374][  0]LogMeshReduction: Display: Using QuadricMeshReduction for automatic static mesh reduction
+[2026.10.06-08.40.49:374][  0]LogMeshReduction: Display: Using SkeletalMeshReduction for automatic skeletal mesh reduction
+[2026.10.06-08.40.49:374][  0]LogMeshReduction: Display: Using ProxyLODMeshReduction for automatic mesh merging
+[2026.10.06-08.40.49:374][  0]LogMeshReduction: Display: No distributed automatic mesh merging module available
+[2026.10.06-08.40.49:479][  0]LogShaderCompilers: Display: Compiling shader autogen file: ../../../../../UE5 Project/Reborn/Intermediate/ShaderAutogen/PCD3D_SM5/AutogenShaderHeaders.ush
+[2026.10.06-08.40.49:479][  0]LogShaderCompilers: Display: Autogen file is unchanged, skipping write.
+[2026.10.06-08.40.49:479][  0]LogVirtualization: Display: VirtualizationSystem name found in ini file: None
+[2026.10.06-08.40.49:479][  0]LogVirtualization: Display: FNullVirtualizationSystem mounted, virtualization will be disabled
+[2026.10.06-08.40.49:528][  0]LogWorldPartition: Display: FWorldPartitionClassDescRegistry::Initialize started...
+[2026.10.06-08.40.49:529][  0]LogWorldPartition: Display: FWorldPartitionClassDescRegistry::Initialize took 1.748 ms
+[2026.10.06-08.40.49:861][  0]LogMetaSound: Display: MetaSound Page Target Initialized to 'Default'
+[2026.10.06-08.40.49:864][  0]LogAudio: Display: Registering Engine Module Parameter Interfaces...
+[2026.10.06-08.40.50:232][  0]LogAudioCaptureCore: Display: No Audio Capture implementations found. Audio input will be silent.
+[2026.10.06-08.40.50:232][  0]LogAudioCaptureCore: Display: No Audio Capture implementations found. Audio input will be silent.
+[2026.10.06-08.40.50:497][  0]LogAssetRegistry: Display: CleanupOrphanedCacheFiles (PreLoad): 1 .ref files found, 1 referenced binaries
+[2026.10.06-08.40.50:497][  0]LogAssetRegistry: Display: CleanupOrphanedCacheFiles: 1 total binaries, 1 referenced (kept), 0 old-style pre-migration (kept), 0 orphans deleted, 0 orphans locked (kept)
+[2026.10.06-08.40.50:497][  0]LogAssetRegistry: Display: FindShardedCacheFiles: 1 via .ref, 0 via migration fallback, 1 total
+[2026.10.06-08.40.50:497][  0]LogAssetRegistry: Display: LoadCacheFiles: loading 1 cache files, memory-mapping=enabled
+[2026.10.06-08.40.50:573][  0]LogAssetRegistry: Display: Asset registry cache read as 122.3 MiB from ../../../../../UE5 Project/Reborn/Intermediate/CachedAssetRegistry/CachedAssetRegistry_0_F4C0A10448EC98895D9CD088C141EAD7.bin (memory-mapped=yes)
+[2026.10.06-08.40.50:573][  0]LogAssetRegistry: Display: AssetDataGatherer spent 0.076s loading caches from ../../../../../UE5 Project/Reborn/Intermediate/CachedAssetRegistry.
+[2026.10.06-08.40.50:586][  0]LogCsvProfiler: Display: Metadata set : largeworldcoordinates="1"
+[2026.10.06-08.40.50:621][  0]LogPython: Display: No pip-enabled plugins with python dependencies found, skipping
+[2026.10.06-08.40.50:893][  0]LogCsvProfiler: Display: Metadata set : raytracing="0"
+[2026.10.06-08.40.51:022][  0]LogPython: Display: 正在运行启动脚本E:/UE5 editor/UE_5.8/Engine/Plugins/Animation/IKRig/Content/Python/init_unreal.py…… started...
+[2026.10.06-08.40.51:030][  0]LogPython: Display: 正在运行启动脚本E:/UE5 editor/UE_5.8/Engine/Plugins/Animation/IKRig/Content/Python/init_unreal.py…… took 8.260 ms
+[2026.10.06-08.40.51:030][  0]LogPython: Display: 正在运行启动脚本E:/UE5 editor/UE_5.8/Engine/Plugins/Animation/ControlRig/Content/Python/init_unreal.py…… started...
+[2026.10.06-08.40.51:050][  0]LogPython: Display: 正在运行启动脚本E:/UE5 editor/UE_5.8/Engine/Plugins/Animation/ControlRig/Content/Python/init_unreal.py…… took 20.216 ms (total: 28.476 ms)
+[2026.10.06-08.40.51:050][  0]LogPythonScriptCommandlet: Display: Running Python script: E:/UE5 Project/Reborn/work/InspectLockerUE.py
+[2026.10.06-08.40.51:229][  0]LogAsyncCompilation: Display: 注意：AssetCompile内存估计值大于可用值，但无论如何我们都会运行它[SkinnedAsset]！所需内存 = 0.000 MiB + 4608.000 MiB，内存限制 = 313.628906 MiB 
+[2026.10.06-08.40.51:229][  0]LogAsyncCompilation: Display: 注意：AssetCompile内存估计值大于可用值，但无论如何我们都会运行它[SkinnedAsset]！所需内存 = 0.000 MiB + 4608.000 MiB，内存限制 = 313.628906 MiB 
+[2026.10.06-08.40.51:242][  0]LogSkinnedAsset: Display: 正在等待蒙皮资产就绪0/1（SKM_Quinn_Simple）……
+[2026.10.06-08.40.51:302][  0]LogPythonScriptCommandlet: Display: Python script executed successfully
+[2026.10.06-08.40.51:302][  0]LogInit: Display: 
+[2026.10.06-08.40.51:302][  0]LogInit: Display: Warning/Error Summary (Unique only)
+[2026.10.06-08.40.51:302][  0]LogInit: Display: -----------------------------------
+[2026.10.06-08.40.51:302][  0]LogInit: Display: LogFileManager: Warning: Error deleting file: C:/Users/doubl/AppData/Local/UnrealEngine/5.8/Saved/Config/WindowsEditor/EditorSettings.ini (Error Code 5)
+[2026.10.06-08.40.51:302][  0]LogInit: Display: LogSsl: Warning: Unable to open ROOT certificate store. Platform provided certificates will not be used
+[2026.10.06-08.40.51:302][  0]LogInit: Display: 
+[2026.10.06-08.40.51:302][  0]LogInit: Display: Success - 0 error(s), 2 warning(s)
+[2026.10.06-08.40.51:302][  0]LogInit: Display: 
+
+Execution of commandlet took:  0.28 seconds, PeakPhysMemoryMB=1726 MB, PeakVirtMemoryMB=1632 MB
+[2026.10.06-08.40.51:451][  0]LogAssetRegistry: Display: CleanupOrphanedCacheFiles (PostWrite): 1 .ref files found, 1 referenced binaries
+[2026.10.06-08.40.51:451][  0]LogAssetRegistry: Display: CleanupOrphanedCacheFiles: 1 total binaries, 1 referenced (kept), 0 old-style pre-migration (kept), 0 orphans deleted, 0 orphans locked (kept)
+[2026.10.06-08.40.51:822][  0]LogShaderCompilers: Display: Exiting ShaderCompilingThread-Distributed
