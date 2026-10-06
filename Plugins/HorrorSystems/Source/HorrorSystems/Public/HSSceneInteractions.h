@@ -36,6 +36,7 @@ public:
     UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Collapse") FVector FallPivotOffset=FVector::ZeroVector;
     UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Collapse") FVector FallAxis=FVector(0,1,0);
     UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Collapse") float FallAngle=90.f;
+    UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Collapse") int32 MinimumCollapseStage=3;
     UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Collapse",meta=(ClampMin=".1")) float FallDuration=1.2f;
     UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Audio") TObjectPtr<class USoundBase> CollapseSound;
     UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Collapse") bool bFalling=false;
@@ -48,17 +49,35 @@ private:
 };
 
 UCLASS(Blueprintable)
+class HORRORSYSTEMS_API AHSRecoveryCheckpoint : public AActor
+{
+    GENERATED_BODY()
+public:
+    AHSRecoveryCheckpoint();
+    virtual void Tick(float Dt) override;
+    UPROPERTY(VisibleAnywhere,BlueprintReadOnly) TObjectPtr<class UBoxComponent> SafeArea;
+    UPROPERTY(EditAnywhere,BlueprintReadWrite) FTransform SpawnTransform;
+};
+
+UCLASS(Blueprintable)
 class HORRORSYSTEMS_API AHSInspectTrigger : public AActor
 {
     GENERATED_BODY()
 public:
     AHSInspectTrigger();
+    virtual void BeginPlay() override;
+    virtual void Tick(float Dt) override;
     virtual void EndPlay(const EEndPlayReason::Type Reason) override;
     UPROPERTY(VisibleAnywhere,BlueprintReadOnly) TObjectPtr<UStaticMeshComponent> Mesh;
     UPROPERTY(EditAnywhere,BlueprintReadWrite) TObjectPtr<UHSItemData> ItemData;
     UPROPERTY(EditAnywhere,BlueprintReadWrite) TObjectPtr<AHSCollapsingObstacle> Obstacle;
+    UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Interaction") bool bCollectToHotbar=true;
+    UHSItemData* GetCollectedItem() const { return CollectedItem; }
     UFUNCTION(BlueprintCallable) bool Interact(AHSCharacter* Player);
 private:
+    UPROPERTY() TObjectPtr<UHSItemData> CollectedItem;
+    bool bCollected=false;
+    FString GetPickupKey() const;
     UPROPERTY() TWeakObjectPtr<AHSPlayerController> InspectingController;
     bool bArmed=false;
     UFUNCTION() void OnInspectionClosed(UHSItemData* Item);

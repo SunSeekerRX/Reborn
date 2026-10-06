@@ -37,5 +37,5 @@ summary=json.loads((project/"Saved/Verification/VerificationSummary.json").read_
 assert summary['failed']==0,"Current verification contains failures"
 plugin_info=json.loads((project/"Portable/Manifest.json").read_text(encoding="utf-8"))
 shutil.copy2(project/"Portable"/plugin_info['archive'],dest/plugin_info['archive'])
-(dest/"Manifest.json").write_text(json.dumps({"name":"Reborn","version":"0.6.3","playable_maps":["Basic_roomA"],"engine":"5.8.2","tests_passed":summary['passed'],"platform":"Win64","configuration":"Shipping","project":source_info,"game":game_info,"plugin":plugin_info},indent=2),encoding="utf-8")
+(dest/"Manifest.json").write_text(json.dumps({"name":"Reborn","version":"0.8.3","startup_map":"RebornTitle","playable_maps":["Basic_roomA","Basic_roomB","Basic_roomC","Basic_roomABC_unchange1"],"stage3_entry_map":"Basic_roomABC_unchange1","engine":"5.8.2","tests_passed":summary['passed'],"platform":"Win64","configuration":"Shipping","project":source_info,"game":game_info,"plugin":plugin_info},indent=2),encoding="utf-8")
 print(json.dumps({"project":source_info,"game":game_info},ensure_ascii=False),flush=True)

@@ -1,0 +1,80 @@
+[
+  {
+    "group": "SafeWall",
+    "file": "ArtSource\\NewRoomArt\\SafeWall\\安全屋-地.png",
+    "original": "安全屋材质/安全屋-地.png",
+    "bytes": 1643961
+  },
+  {
+    "group": "SafeWall",
+    "file": "ArtSource\\NewRoomArt\\SafeWall\\安全屋-墙.png",
+    "original": "安全屋材质/安全屋-墙.png",
+    "bytes": 2748942
+  },
+  {
+    "group": "RoomWall",
+    "file": "ArtSource\\NewRoomArt\\RoomWall\\墙.png",
+    "original": "房间材质/墙.png",
+    "bytes": 3496395
+  },
+  {
+    "group": "RoomWall",
+    "file": "ArtSource\\NewRoomArt\\RoomWall\\房间-木地板.png",
+    "original": "房间材质/房间-木地板.png",
+    "bytes": 3158424
+  },
+  {
+    "group": "DiningTable",
+    "file": "ArtSource\\NewRoomArt\\DiningTable\\木质工作桌3d模型.fbx",
+    "original": "大桌子/木质工作桌3d模型.fbx",
+    "bytes": 39725392
+  },
+  {
+    "group": "DiningTable",
+    "file": "ArtSource\\NewRoomArt\\DiningTable\\木质工作桌3d模型_basecolor.jpg",
+    "original": "大桌子/木质工作桌3d模型_basecolor.jpg",
+    "bytes": 5168873
+  },
+  {
+    "group": "Lantern",
+    "file": "ArtSource\\NewRoomArt\\Lantern\\Lantern_01_brass_diff_1k.exr",
+    "original": "煤油灯/Lantern_01_brass_diff_1k.exr",
+    "bytes": 16794183
+  },
+  {
+    "group": "Lantern",
+    "file": "ArtSource\\NewRoomArt\\Lantern\\Lantern_01_brass_diff_1k.jpg",
+    "original": "煤油灯/Lantern_01_brass_diff_1k.jpg",
+    "bytes": 180744
+  },
+  {
+    "group": "Lantern",
+    "file": "ArtSource\\NewRoomArt\\Lantern\\煤油灯.fbx",
+    "original": "煤油灯/煤油灯.fbx",
+    "bytes": 894108
+  },
+  {
+    "group": "BookshelfNew",
+    "file": "ArtSource\\NewRoomArt\\BookshelfNew\\木质书架3d模型.fbx",
+    "original": "新书架/木质书架3d模型.fbx",
+    "bytes": 2033696
+  },
+  {
+    "group": "BookshelfNew",
+    "file": "ArtSource\\NewRoomArt\\BookshelfNew\\木质书架3d模型_basecolor.jpg",
+    "original": "新书架/木质书架3d模型_basecolor.jpg",
+    "bytes": 1856083
+  },
+  {
+    "group": "StorageRack",
+    "file": "ArtSource\\NewRoomArt\\StorageRack\\金属货架3d模型.fbx",
+    "original": "货架/金属货架3d模型.fbx",
+    "bytes": 41157168
+  },
+  {
+    "group": "StorageRack",
+    "file": "ArtSource\\NewRoomArt\\StorageRack\\金属货架3d模型_basecolor.jpg",
+    "original": "货架/金属货架3d模型_basecolor.jpg",
+    "bytes": 2330444
+  }
+]
