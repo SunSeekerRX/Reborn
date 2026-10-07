@@ -2,7 +2,7 @@
 
 最新完整实走与策划案第 9–11 部分核对：15 项 UE 测试通过、0 失败，详见 [FullPlaytest.md](Docs/FullPlaytest.md)。本轮报告、截图、备份和编译缓存在工程外 `../LocalArtifacts/FullPlaytest_20261007`。
 
-当前版本按《破笼归途》策划案 v0.1 第 9–11 部分及补充要求实现。第一阶段 A→B→A，第二阶段 A→C→B→A，第三阶段连通 ABC→最终出口→标题。安全屋木门替代空气墙，剧情照片、遗言和信息替代测试钥匙；三次受伤后通过血红白光满血返回最近安全位置并保留进度。详细说明及当前复测入口见 [GameJamFlow.md](Plugins/HorrorSystems/Docs/GameJamFlow.md)。
+当前版本按《破笼归途》策划案 v0.1 第 9–11 部分及补充要求实现。第一阶段 A→B→A，第二阶段 A→C→B→ABC（直接衔接第三阶段），第三阶段连通 ABC→最终出口→标题。安全屋木门替代空气墙，剧情照片、遗言和信息替代测试钥匙；三次受伤后通过血红白光满血返回最近安全位置并保留进度。详细说明及当前复测入口见 [GameJamFlow.md](Plugins/HorrorSystems/Docs/GameJamFlow.md)。
 
 Git 工程只保留源码、配置和 UE 资源。本次不生成压缩包、不提交或推送；原始音频、备份、编译缓存与测试报告置于工程外 `../LocalArtifacts/GameJam_20261007`。提交时请包含新增的 `Audio/Jam`、`Materials/Jam`、`Story` 目录及修改的四张玩法地图，并通过 Git LFS 上传资源。
 

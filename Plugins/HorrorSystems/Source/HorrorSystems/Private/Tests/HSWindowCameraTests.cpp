@@ -11,6 +11,8 @@
 #include "EngineUtils.h"
 #include "Camera/CameraComponent.h"
 #include "Camera/PlayerCameraManager.h"
+#include "Components/CapsuleComponent.h"
+#include "NavigationSystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "UnrealClient.h"
 #include "Misc/Paths.h"
@@ -43,8 +45,23 @@ public:
         if(!Started)
         {
             // The current story starts this performance after reading B's clue in the main room.
+            bool FoundStandingPosition=false;
+            auto* Nav=FNavigationSystem::GetCurrent<UNavigationSystemV1>(W);
             for(TActorIterator<AHSPickup> It(W);It;++It) if(It->ClueId==TEXT("Warning_B"))
-            {Player->SetActorLocation(It->GetActorLocation()+FVector(-180,0,-29));break;}
+            {
+                FCollisionQueryParams Q;Q.AddIgnoredActor(Player);Q.AddIgnoredActor(*It);
+                for(int32 I=0;Nav && I<16 && !FoundStandingPosition;++I)
+                {
+                    const float Angle=I*2.f*PI/16.f;FNavLocation Floor;
+                    const FVector Candidate=It->GetActorLocation()+FVector(FMath::Cos(Angle)*170.f,FMath::Sin(Angle)*170.f,-100.f);
+                    if(!Nav->ProjectPointToNavigation(Candidate,Floor,FVector(40,40,250))) continue;
+                    const FVector Standing=Floor.Location+FVector(0,0,Player->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+2.f);
+                    if(W->OverlapBlockingTestByChannel(Standing,FQuat::Identity,ECC_Pawn,FCollisionShape::MakeCapsule(34,88),Q)) continue;
+                    Player->SetActorLocation(Standing);FoundStandingPosition=true;
+                }
+                break;
+            }
+            if(!FoundStandingPosition) {Test->AddError(TEXT("No unobstructed standing floor near B's clue"));return true;}
             Sequence=Room->WindowSequence;Sequence->Finish();PC->PlayerCameraManager->UpdateCamera(0);Sequence->Play();
             Previous=Sequence->Camera->GetComponentLocation();Started=true;StartedAt=FPlatformTime::Seconds();
             Test->AddInfo(FString::Printf(TEXT("Intro begins at %s; destination %s"),*Previous.ToString(),*Sequence->GetActorTransform().TransformPosition(Sequence->CameraOffset).ToString()));

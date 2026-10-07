@@ -207,7 +207,6 @@ void AHSStoryDirector::Tick(float Dt)
     bObjectiveAcquired=Route && P->CanExit(*Route);
     if(P->StoryStep==1) bObjectiveAcquired&=bNarrativeFinished && (!WindowSequence || !WindowSequence->bPlaying);
     if(bObjectiveAcquired) {bSafeAreaSealed=false;if(SafeDoor) SafeDoor->Unlock();if(Safe) {ReadyTravelRoute=*Route;bSafeTravelReady=true;}}
-    if(P->StoryStep==2 && Route && Safe) {ReadyTravelRoute=*Route;bSafeTravelReady=true;}
     if(P->Stage==2 && P->HasStageClue(2,TEXT("RoomC"),TEXT("Testament_C"))) P->bCluePanelUnlocked=true;
     if(P->Stage==3 && P->HasStageClue(3,TEXT("RoomA"),TEXT("FinalMessage")))
     {
@@ -228,8 +227,8 @@ FText AHSStoryDirector::MissionText() const
     if(bSafeTravelReady) return FText::FromString(TEXT("穿过安全屋里的白光出口"));
     if(bObjectiveAcquired) return FText::FromString(TEXT("用获得的线索打开木门，赶紧返回安全屋"));
     if(P->StoryStep==1 && P->HasClue(TEXT("Warning_B")) && !bNarrativeFinished) return FText::FromString(TEXT("检视刚拾取的信息"));
-    const TCHAR* Tasks[]={TEXT("寻找照片"),TEXT("寻找房间 B 留下的信息"),TEXT("通过安全屋出口前往房间 C"),TEXT("寻找房间 C 的遗言"),TEXT("寻找房间 B 的关键线索"),TEXT("寻找房间 A 的最后一条线索")};
-    return FText::FromString(Tasks[FMath::Clamp(P->StoryStep,0,5)]);
+    const TCHAR* Tasks[]={TEXT("寻找照片"),TEXT("寻找房间 B 留下的信息"),TEXT("寻找房间 A 前往房间 C 的提示"),TEXT("寻找房间 C 的遗言"),TEXT("寻找房间 B 的关键线索")};
+    return FText::FromString(Tasks[FMath::Clamp(P->StoryStep,0,4)]);
 }
 
 AHSRoomVariation::AHSRoomVariation()

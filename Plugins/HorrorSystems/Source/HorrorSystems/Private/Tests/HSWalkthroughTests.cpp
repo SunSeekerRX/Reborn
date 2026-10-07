@@ -134,7 +134,7 @@ class FPhysicalStory : public IAutomationLatentCommand
     bool SawWhite=false,SawBlack=false;
     bool DeathShot=false;
     double PortalWait=0;
-    bool Plan(UWorld* W,AHSCharacter* Player,FVector Target){return Walker.Plan(W,Player,Target,Visit==6,Test);}
+    bool Plan(UWorld* W,AHSCharacter* Player,FVector Target){return Walker.Plan(W,Player,Target,Visit==5,Test);}
     void Shot(const FString& Name){if(FParse::Param(FCommandLine::Get(),TEXT("HSVisualTest")))FScreenshotRequest::RequestScreenshot(FPaths::Combine(FPaths::ProjectSavedDir(),TEXT("Verification/Walkthrough"),Name+TEXT(".png")),true,false);}
 public:
     explicit FPhysicalStory(FAutomationTestBase* T):Test(T){}
@@ -164,14 +164,15 @@ public:
         for(TActorIterator<AHSMonster> It(W);It;++It){It->bCanDamagePlayer=false;It->SetActorEnableCollision(false);}
         if(Step==1)
         {
-            const FName Expected[]={TEXT("RoomA"),TEXT("RoomB"),TEXT("RoomA"),TEXT("RoomC"),TEXT("RoomB"),TEXT("RoomA"),TEXT("RoomA")};
-            Test->TestEqual(TEXT("Actual map arrival order"),Room->Rules->RoomId,Expected[Visit]);Test->TestEqual(TEXT("Actual story arrival order"),P->StoryStep,Visit);
+            const FName Expected[]={TEXT("RoomA"),TEXT("RoomB"),TEXT("RoomA"),TEXT("RoomC"),TEXT("RoomB"),TEXT("RoomA")};
+            const int32 Nodes[]={0,1,2,3,4,6};
+            Test->TestEqual(TEXT("Actual map arrival order"),Room->Rules->RoomId,Expected[Visit]);Test->TestEqual(TEXT("Actual story arrival order"),P->StoryStep,Nodes[Visit]);
             Test->TestTrue(TEXT("Arrival in safety"),Room->IsSafe(Player));Test->TestFalse(TEXT("Safety pauses timer"),P->bTimerRunning);
             Portal=nullptr;for(TActorIterator<AHSPortal> It(W);It;++It)if(It->RoomRules==Room->Rules){Portal=*It;break;}
-            Pickup=nullptr;for(TActorIterator<AHSPickup> It(W);It;++It)if(It->RequiredStoryStep==Visit){Pickup=*It;break;}
+            Pickup=nullptr;for(TActorIterator<AHSPickup> It(W);It;++It)if(It->RequiredStoryStep==Nodes[Visit]){Pickup=*It;break;}
             if(!Pickup.IsValid()){Test->AddError(TEXT("Authored clue missing"));return true;}
             Item=Pickup->ItemData;Shot(FString::Printf(TEXT("%02d_Arrival"),Visit+1));
-            if(!Walker.Plan(W,Player,Pickup->GetActorLocation()+FVector(-220,0,70),Visit==6,Test,Pickup.Get()))return true;Step=2;return false;
+            if(!Walker.Plan(W,Player,Pickup->GetActorLocation()+FVector(-220,0,70),Visit==5,Test,Pickup.Get()))return true;Step=2;return false;
         }
         if(Step==2)
         {
@@ -225,7 +226,7 @@ public:
         }
         if(Step==7)
         {
-            if(Visit==6)
+            if(Visit==5)
             {
                 // Wait for collapse to complete before scanning the final route.
                 Until=FPlatformTime::Seconds()+3;Step=20;return false;

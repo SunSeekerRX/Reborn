@@ -56,6 +56,7 @@ public:
     UPROPERTY(Config, EditAnywhere, Category="Vision", meta=(ClampMin="200")) float ClearRadius=500.f;
     UPROPERTY(Config, EditAnywhere, Category="Vision", meta=(ClampMin="300")) float HiddenRadius=1600.f;
     UPROPERTY(Config, EditAnywhere, Category="Vision", meta=(ClampMin="0.001", ClampMax="1")) float FogDensity=.08f;
+    UPROPERTY(Config, EditAnywhere, Category="Vision", meta=(ClampMin="0.1",ClampMax="3.0",DisplayName="场景亮度倍率",ToolTip="1.0 为原始亮度；1.2 将场景曝光提高约 20%，不改变可视距离。")) float SceneBrightnessMultiplier=1.f;
     UPROPERTY(Config, EditAnywhere, Category="Vision", meta=(ClampMin="100")) float FlashlightRange=800.f;
     UPROPERTY(Config, EditAnywhere, Category="Vision", meta=(ClampMin="100")) float PlayerLightRadius=330.f;
     UPROPERTY(Config, EditAnywhere, Category="Vision", meta=(ClampMin="1",Units="lm")) float PlayerLightIntensity=180.f;
