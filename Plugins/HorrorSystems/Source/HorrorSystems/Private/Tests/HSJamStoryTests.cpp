@@ -11,6 +11,7 @@
 #include "EngineUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/BoxComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/PointLightComponent.h"
 #include "Components/TextRenderComponent.h"
@@ -19,6 +20,7 @@
 #include "Misc/Paths.h"
 #include "UnrealClient.h"
 #include "NavigationSystem.h"
+#include "NavigationPath.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
 namespace
@@ -26,19 +28,21 @@ namespace
 class FJamStoryScenario : public IAutomationLatentCommand
 {
     FAutomationTestBase* Test;
+    bool bPhotoReturnOnly=false;
     int32 Visit=0,Step=0;
     double Started=FPlatformTime::Seconds(),Until=Started+1;
     TWeakObjectPtr<UWorld> Departure;
     bool SawWhite=false;
     FVector SafePosition;
     FVector OriginalFurniture;
+    FVector PhotoMonsterStart;
     TWeakObjectPtr<AHSPortal> Portal;
     TWeakObjectPtr<AHSPickup> Objective;
     FString PickupName;
     void Shot(const TCHAR* Name)
     {if(FParse::Param(FCommandLine::Get(),TEXT("HSVisualTest"))) FScreenshotRequest::RequestScreenshot(FPaths::Combine(FPaths::ProjectSavedDir(),TEXT("Verification"),Name),true,false);}
 public:
-    explicit FJamStoryScenario(FAutomationTestBase* T):Test(T) {}
+    explicit FJamStoryScenario(FAutomationTestBase* T,bool Focused=false):Test(T),bPhotoReturnOnly(Focused) {}
     bool Update() override
     {
         if(FPlatformTime::Seconds()-Started>180) {Test->AddError(FString::Printf(TEXT("Story timed out at visit %d step %d"),Visit,Step));return true;}
@@ -59,6 +63,8 @@ public:
             Test->TestEqual(TEXT("Story room order"),Room->Rules->RoomId,Rooms[Visit]);
             Test->TestEqual(TEXT("Story node order"),P->StoryStep,Visit);
             Test->TestEqual(TEXT("Stage order"),P->Stage,Visit<2?1:Visit<6?2:3);
+            if(bPhotoReturnOnly && Visit==2)
+            {Test->TestEqual(TEXT("First B return loads the actual A map"),UGameplayStatics::GetCurrentLevelName(W,true),FString(TEXT("Basic_roomA")));Test->TestTrue(TEXT("First B return arrives in A safety"),Room->IsSafe(Player));Shot(TEXT("FirstBReturnToA.png"));return true;}
             Test->TestTrue(TEXT("Each arrival is inside safety"),Room->IsSafe(Player));
             Test->TestFalse(TEXT("Safe room countdown is stopped"),P->bTimerRunning);
             Test->TestTrue(TEXT("Player spawn has a walking floor"),Player->GetCharacterMovement()->IsMovingOnGround());
@@ -66,7 +72,7 @@ public:
             Test->TestEqual(TEXT("Invisible barrier removed"),Room->ReturnBarrier->GetCollisionEnabled(),ECollisionEnabled::NoCollision);
             Test->AddInfo(FString::Printf(TEXT("Jam arrival %d %s stage %d"),Visit,*W->GetOutermost()->GetName(),P->Stage));
             SafePosition=Player->GetActorLocation();
-            if(Visit==0 || Visit==2 || Visit==5)
+            if(!bPhotoReturnOnly && (Visit==0 || Visit==2 || Visit==5))
             {
                 int32 Paintings=0;for(TActorIterator<AHSVisitPainting> It(W);It;++It) {++Paintings;Test->TestEqual(TEXT("A paintings change after first visit"),It->bBlank,Visit==0);}
                 Test->TestEqual(TEXT("Both authored A paintings preserved"),Paintings,2);
@@ -109,7 +115,27 @@ public:
             Test->TestTrue(TEXT("Portal is locked before objective"),Portal->IsLocked());Portal->Tick(0);Test->TestFalse(TEXT("Closed door conceals portal glow"),Portal->Marker->IsVisible());
             // Freeze damage during narrative traversal; pursuit state itself remains live.
             for(TActorIterator<AHSMonster> It(W);It;++It) It->bCanDamagePlayer=false;
-            Player->SetActorLocation(Objective->GetActorLocation()+FVector(100,0,70));Room->Tick(.01f);
+            FVector PickupPosition=Objective->GetActorLocation()+FVector(100,0,70);
+            if(bPhotoReturnOnly)
+            {
+                // Stand on connected walkable floor, not on the authored tabletop.
+                auto* Nav=FNavigationSystem::GetCurrent<UNavigationSystemV1>(W);
+                FCollisionQueryParams Q;Q.AddIgnoredActor(Player);Q.AddIgnoredActor(Objective.Get());
+                bool Found=false;
+                for(int32 I=0;Nav && I<16 && !Found;++I)
+                {
+                    const float Angle=I*2.f*PI/16.f;FNavLocation Floor;
+                    const FVector Candidate=Objective->GetActorLocation()+FVector(FMath::Cos(Angle)*170.f,FMath::Sin(Angle)*170.f,-100.f);
+                    if(!Nav->ProjectPointToNavigation(Candidate,Floor,FVector(40,40,250))) continue;
+                    const FVector Standing=Floor.Location+FVector(0,0,Player->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+2.f);
+                    if(W->OverlapBlockingTestByChannel(Standing,FQuat::Identity,ECC_Pawn,FCollisionShape::MakeCapsule(34,88),Q)) continue;
+                    auto* Path=UNavigationSystemV1::FindPathToLocationSynchronously(W,Room->Pursuer->GetActorLocation(),Floor.Location,Room->Pursuer);
+                    if(!Path || !Path->IsValid() || Path->IsPartial()) continue;
+                    PickupPosition=Standing;Found=true;
+                }
+                if(!Found) {Test->AddError(TEXT("No connected floor within pickup range of authored clue"));return true;}
+            }
+            Player->SetActorLocation(PickupPosition);Room->Tick(.01f);
             Test->TestTrue(TEXT("Actual authored objective can be picked up"),Objective->TryPickup(Player));Player->CancelAutoInspection();
             PC->ActivateNumberSlot(S->SelectedSlot);PC->ActivateNumberSlot(S->SelectedSlot);
             Test->TestTrue(TEXT("Double-number opens inspection"),PC->IsInspecting());
@@ -123,9 +149,27 @@ public:
         if(Step==11)
         {
             PC->CloseInspection();Test->TestFalse(TEXT("Closing inspection resumes time"),UGameplayStatics::IsGamePaused(W));
+            if(Visit==0)
+            {
+                Room->Tick(.01f);Test->TestTrue(TEXT("First photo starts Room A pursuit after inspection closes"),Room->Pursuer && Room->Pursuer->bPursuitEnabled);
+                if(bPhotoReturnOnly && Room->Pursuer) {PhotoMonsterStart=Room->Pursuer->GetActorLocation();Step=12;Until=FPlatformTime::Seconds()+2;return false;}
+            }
             if(Visit==1)
             {Test->TestTrue(TEXT("B window cinematic starts only after reading"),Room->WindowSequence && Room->WindowSequence->bPlaying);Test->TestFalse(TEXT("B chase remains hidden during cinematic"),Room->Pursuer->bPursuitEnabled);Step=1;return false;}
             Step=2;return false;
+        }
+        if(Step==12)
+        {
+            auto* AI=Cast<AHSPursuitController>(Room->Pursuer->GetController());
+            auto* Nav=FNavigationSystem::GetCurrent<UNavigationSystemV1>(W);FNavLocation MonsterNav,PlayerNav;
+            const bool MonsterOnNav=Nav && Nav->ProjectPointToNavigation(Room->Pursuer->GetActorLocation(),MonsterNav,FVector(100,100,300));
+            const bool PlayerOnNav=Nav && Nav->ProjectPointToNavigation(Player->GetActorLocation(),PlayerNav,FVector(100,100,300));
+            Test->AddInfo(FString::Printf(TEXT("Photo pursuit monster=%s player=%s velocity=%s controller=%s target=%s timer=%d mode=%d state=%d nav=%d/%d"),*Room->Pursuer->GetActorLocation().ToString(),*Player->GetActorLocation().ToString(),*Room->Pursuer->GetVelocity().ToString(),*GetNameSafe(AI),*GetNameSafe(AI?AI->Target.Get():nullptr),P->bTimerRunning,int32(Room->Pursuer->GetCharacterMovement()->MovementMode),int32(Room->Pursuer->PursuitState),MonsterOnNav,PlayerOnNav));
+            Test->TestFalse(TEXT("Photo monster is rendered"),Room->Pursuer->IsHidden());
+            Test->TestTrue(TEXT("Photo monster has collision"),Room->Pursuer->GetActorEnableCollision());
+            Test->TestTrue(TEXT("Photo monster actually moves toward player on current room geometry"),FVector::DistSquared2D(PhotoMonsterStart,Room->Pursuer->GetActorLocation())>100.f);
+            PC->SetControlRotation((Room->Pursuer->GetActorLocation()+FVector(0,0,65)-Player->GetActorLocation()-FVector(0,0,60)).Rotation());
+            Shot(TEXT("PhotoMonsterActive.png"));Step=2;return false;
         }
         if(Step==1)
         {
@@ -227,4 +271,6 @@ public:
 }
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FHSJamStoryTest,"HorrorSystems.Jam.FullStory",EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
 bool FHSJamStoryTest::RunTest(const FString&) {ADD_LATENT_AUTOMATION_COMMAND(FJamStoryScenario(this));return true;}
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FHSPhotoReturnTest,"HorrorSystems.Jam.FirstPhotoAndBReturn",EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FHSPhotoReturnTest::RunTest(const FString&) {ADD_LATENT_AUTOMATION_COMMAND(FJamStoryScenario(this,true));return true;}
 #endif

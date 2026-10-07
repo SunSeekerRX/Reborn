@@ -183,6 +183,13 @@ void AHSStoryDirector::Tick(float Dt)
         }
     }
     if(P->bCinematic) return;
+    if(P->Stage==1 && P->StoryStep==0 && P->HasClue(TEXT("Photo_A")) && !bMonsterTriggered)
+    {
+        // Pickup inspection pauses the world; pursuit begins when gameplay resumes.
+        bMonsterTriggered=true;ActivateMonster(true);
+        if(auto* Sound=GetDefault<UHSSettings>()->FirstMonsterRoarSound.LoadSynchronous()) UGameplayStatics::PlaySound2D(this,Sound,.8f);
+        PC->Speak(FText::FromString(TEXT("……不妙，得赶紧回去。")),4.f);
+    }
     const bool Safe=IsSafe(Player);
     if(Safe) {bVisitedSafety=true;P->bTimerRunning=false;S->RecoveryTransform=FTransform(PC->GetControlRotation(),Player->GetActorLocation());S->bHasRecovery=true;}
     else
