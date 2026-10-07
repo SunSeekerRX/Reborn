@@ -29,6 +29,7 @@ class FJamStoryScenario : public IAutomationLatentCommand
 {
     FAutomationTestBase* Test;
     bool bPhotoReturnOnly=false;
+    int32 LastFocusedVisit=2;
     int32 Visit=0,Step=0;
     double Started=FPlatformTime::Seconds(),Until=Started+1;
     TWeakObjectPtr<UWorld> Departure;
@@ -42,7 +43,7 @@ class FJamStoryScenario : public IAutomationLatentCommand
     void Shot(const TCHAR* Name)
     {if(FParse::Param(FCommandLine::Get(),TEXT("HSVisualTest"))) FScreenshotRequest::RequestScreenshot(FPaths::Combine(FPaths::ProjectSavedDir(),TEXT("Verification"),Name),true,false);}
 public:
-    explicit FJamStoryScenario(FAutomationTestBase* T,bool Focused=false):Test(T),bPhotoReturnOnly(Focused) {}
+    explicit FJamStoryScenario(FAutomationTestBase* T,bool Focused=false,int32 LastVisit=2):Test(T),bPhotoReturnOnly(Focused),LastFocusedVisit(LastVisit) {}
     bool Update() override
     {
         if(FPlatformTime::Seconds()-Started>180) {Test->AddError(FString::Printf(TEXT("Story timed out at visit %d step %d"),Visit,Step));return true;}
@@ -55,6 +56,8 @@ public:
         if(Step==9 && S->bTitleScreen && !S->bWhiteTransition)
         {Test->TestTrue(TEXT("Ending crosses an opaque white frame"),SawWhite);Test->AddInfo(TEXT("Completed all three stages and returned to title"));Shot(TEXT("JamEndingTitle.png"));return true;}
         auto* Room=Cast<AHSStoryDirector>(AHSRoomDirector::Find(W));
+        if(Player && !Room && !S->bWhiteTransition && FPlatformTime::Seconds()>Until+3)
+        {Test->AddError(TEXT("Loaded room is missing its story director; progression cannot advance"));return true;}
         if(!Player || !Room || S->bWhiteTransition || FPlatformTime::Seconds()<Until) return false;
         auto* P=Room->Progress();
         if(Step==0)
@@ -63,8 +66,12 @@ public:
             Test->TestEqual(TEXT("Story room order"),Room->Rules->RoomId,Rooms[Visit]);
             Test->TestEqual(TEXT("Story node order"),P->StoryStep,Visit);
             Test->TestEqual(TEXT("Stage order"),P->Stage,Visit<2?1:Visit<6?2:3);
-            if(bPhotoReturnOnly && Visit==2)
+            if(bPhotoReturnOnly && Visit==2 && LastFocusedVisit==2)
             {Test->TestEqual(TEXT("First B return loads the actual A map"),UGameplayStatics::GetCurrentLevelName(W,true),FString(TEXT("Basic_roomA")));Test->TestTrue(TEXT("First B return arrives in A safety"),Room->IsSafe(Player));Shot(TEXT("FirstBReturnToA.png"));return true;}
+            if(bPhotoReturnOnly && Visit==LastFocusedVisit && LastFocusedVisit>2)
+            {Test->TestEqual(TEXT("Second-stage C then B returns to A"),UGameplayStatics::GetCurrentLevelName(W,true),FString(TEXT("Basic_roomA")));Test->TestTrue(TEXT("Second-stage return arrives in A safety"),Room->IsSafe(Player));Shot(TEXT("SecondStageReturnToA.png"));return true;}
+            if(Visit==3) Test->TestEqual(TEXT("Second-stage A portal loads C, not B"),UGameplayStatics::GetCurrentLevelName(W,true),FString(TEXT("Basic_roomC")));
+            if(Visit==4) Test->TestEqual(TEXT("Second-stage C portal loads B"),UGameplayStatics::GetCurrentLevelName(W,true),FString(TEXT("Basic_roomB")));
             Test->TestTrue(TEXT("Each arrival is inside safety"),Room->IsSafe(Player));
             Test->TestFalse(TEXT("Safe room countdown is stopped"),P->bTimerRunning);
             Test->TestTrue(TEXT("Player spawn has a walking floor"),Player->GetCharacterMovement()->IsMovingOnGround());
@@ -273,4 +280,6 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FHSJamStoryTest,"HorrorSystems.Jam.FullStory",E
 bool FHSJamStoryTest::RunTest(const FString&) {ADD_LATENT_AUTOMATION_COMMAND(FJamStoryScenario(this));return true;}
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FHSPhotoReturnTest,"HorrorSystems.Jam.FirstPhotoAndBReturn",EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
 bool FHSPhotoReturnTest::RunTest(const FString&) {ADD_LATENT_AUTOMATION_COMMAND(FJamStoryScenario(this,true));return true;}
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FHSSecondStageRouteTest,"HorrorSystems.Jam.SecondStageACB",EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FHSSecondStageRouteTest::RunTest(const FString&) {ADD_LATENT_AUTOMATION_COMMAND(FJamStoryScenario(this,true,5));return true;}
 #endif
