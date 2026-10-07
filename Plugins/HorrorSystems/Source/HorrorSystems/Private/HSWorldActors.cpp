@@ -222,6 +222,9 @@ void AHSVisionRig::BeginPlay()
     {
         const auto* S=GetDefault<UHSSettings>();
         Fog->SetFogDensity(S->FogDensity); Fog->SetStartDistance(S->ClearRadius*.6f);
+        // Exposure uses stops: log2(1.2) raises linear scene exposure by twenty percent.
+        PostProcess->Settings.bOverride_AutoExposureBias=true;
+        PostProcess->Settings.AutoExposureBias+=FMath::Log2(FMath::Clamp(S->SceneBrightnessMultiplier,.1f,3.f));
     }
     // Depth-based fade also hides emissive objects and distant characters, without
     // removing large floor collision or NavMesh geometry from the world.

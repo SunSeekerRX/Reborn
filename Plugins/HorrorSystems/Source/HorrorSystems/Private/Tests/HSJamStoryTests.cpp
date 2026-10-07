@@ -62,14 +62,15 @@ public:
         auto* P=Room->Progress();
         if(Step==0)
         {
-            const FName Rooms[]={TEXT("RoomA"),TEXT("RoomB"),TEXT("RoomA"),TEXT("RoomC"),TEXT("RoomB"),TEXT("RoomA"),TEXT("RoomA")};
+            const FName Rooms[]={TEXT("RoomA"),TEXT("RoomB"),TEXT("RoomA"),TEXT("RoomC"),TEXT("RoomB"),TEXT("RoomA")};
+            const int32 StoryNodes[]={0,1,2,3,4,6};
             Test->TestEqual(TEXT("Story room order"),Room->Rules->RoomId,Rooms[Visit]);
-            Test->TestEqual(TEXT("Story node order"),P->StoryStep,Visit);
-            Test->TestEqual(TEXT("Stage order"),P->Stage,Visit<2?1:Visit<6?2:3);
+            Test->TestEqual(TEXT("Story node order"),P->StoryStep,StoryNodes[Visit]);
+            Test->TestEqual(TEXT("Stage order"),P->Stage,Visit<2?1:Visit<5?2:3);
             if(bPhotoReturnOnly && Visit==2 && LastFocusedVisit==2)
             {Test->TestEqual(TEXT("First B return loads the actual A map"),UGameplayStatics::GetCurrentLevelName(W,true),FString(TEXT("Basic_roomA")));Test->TestTrue(TEXT("First B return arrives in A safety"),Room->IsSafe(Player));Shot(TEXT("FirstBReturnToA.png"));return true;}
             if(bPhotoReturnOnly && Visit==LastFocusedVisit && LastFocusedVisit>2)
-            {Test->TestEqual(TEXT("Second-stage C then B returns to A"),UGameplayStatics::GetCurrentLevelName(W,true),FString(TEXT("Basic_roomA")));Test->TestTrue(TEXT("Second-stage return arrives in A safety"),Room->IsSafe(Player));Shot(TEXT("SecondStageReturnToA.png"));return true;}
+            {Test->TestEqual(TEXT("Second-stage B goes directly to combined ABC"),UGameplayStatics::GetCurrentLevelName(W,true),FString(TEXT("Basic_roomABC_unchange1")));Test->TestEqual(TEXT("ABC starts third stage"),P->Stage,3);Test->TestTrue(TEXT("ABC arrival is in its A safety"),Room->IsSafe(Player));Shot(TEXT("ThirdStageArrivalABC.png"));return true;}
             if(Visit==3) Test->TestEqual(TEXT("Second-stage A portal loads C, not B"),UGameplayStatics::GetCurrentLevelName(W,true),FString(TEXT("Basic_roomC")));
             if(Visit==4) Test->TestEqual(TEXT("Second-stage C portal loads B"),UGameplayStatics::GetCurrentLevelName(W,true),FString(TEXT("Basic_roomB")));
             Test->TestTrue(TEXT("Each arrival is inside safety"),Room->IsSafe(Player));
@@ -79,7 +80,7 @@ public:
             Test->TestEqual(TEXT("Invisible barrier removed"),Room->ReturnBarrier->GetCollisionEnabled(),ECollisionEnabled::NoCollision);
             Test->AddInfo(FString::Printf(TEXT("Jam arrival %d %s stage %d"),Visit,*W->GetOutermost()->GetName(),P->Stage));
             SafePosition=Player->GetActorLocation();
-            if(!bPhotoReturnOnly && (Visit==0 || Visit==2 || Visit==5))
+            if(!bPhotoReturnOnly && (Visit==0 || Visit==2))
             {
                 int32 Paintings=0;for(TActorIterator<AHSVisitPainting> It(W);It;++It) {++Paintings;Test->TestEqual(TEXT("A paintings change after first visit"),It->bBlank,Visit==0);}
                 Test->TestEqual(TEXT("Both authored A paintings preserved"),Paintings,2);
@@ -104,9 +105,8 @@ public:
                 Test->TestFalse(TEXT("Stage one A contains no active pursuer"),Room->Pursuer->bPursuitEnabled);
             }
             Portal=nullptr;for(TActorIterator<AHSPortal> It(W);It;++It) if(It->RoomRules==Room->Rules) {Portal=*It;break;}
-            if(Visit==6) {Step=7;return false;}
+            if(Visit==5) {Step=7;return false;}
             if(!Portal.IsValid()) {Test->AddError(TEXT("Missing actual travel portal"));return true;}
-            if(Visit==2) {Room->Tick(.01f);Step=4;return false;}
             Objective=nullptr;for(TActorIterator<AHSPickup> It(W);It;++It) if(It->RequiredStoryStep==Visit) {Objective=*It;break;}
             if(!Objective.IsValid()) {Test->AddError(TEXT("Missing design objective"));return true;}
             PickupName=Objective->ClueId.ToString();
@@ -206,6 +206,7 @@ public:
         }
         if(Step==4)
         {
+            if(!Portal.IsValid()) {Test->AddError(TEXT("Travel portal expired before safe-return activation"));return true;}
             Test->TestTrue(TEXT("Safe return authorizes portal"),Room->bSafeTravelReady);
             Test->TestFalse(TEXT("Safe return stops timer"),P->bTimerRunning);
             Test->TestFalse(TEXT("Ready portal is unlocked"),Portal->IsLocked());

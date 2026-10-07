@@ -62,9 +62,8 @@ bulb = material('M_FlickeringBulb', (1.2, .8, .35), True)
 metal = material('M_LampHousing', (.045, .04, .035))
 rules = {c: make_data('DA_JamRoom' + c, u.HSRoomRules) for c in 'ABC'}
 route_specs = {
-    'A': [(1, 0, 'B', 1, ['Photo_A'], False), (2, 2, 'C', 3, [], False),
-          (2, 5, 'A', 6, ['Clue_A'], True)],
-    'B': [(1, 1, 'A', 2, ['Warning_B'], True), (2, 4, 'A', 5, ['Clue_B'], False)],
+    'A': [(1, 0, 'B', 1, ['Photo_A'], False), (2, 2, 'C', 3, ['Clue_A'], False)],
+    'B': [(1, 1, 'A', 2, ['Warning_B'], True), (2, 4, 'A', 6, ['Clue_B'], True)],
     'C': [(2, 3, 'B', 4, ['Testament_C'], False)],
 }
 for c, rule in rules.items():
@@ -81,7 +80,7 @@ for c, rule in rules.items():
         route.set_editor_property('destination', load(ROOT + '/Maps/' + ('Basic_roomABC_unchange1' if next_step == 6 else 'Basic_room' + target)))
         route.set_editor_property('required_clues', required)
         route.set_editor_property('advance_stage', advance)
-        route.set_editor_property('require_all_stage2_clues', step == 5)
+        route.set_editor_property('require_all_stage2_clues', stage == 2 and next_step == 6)
         routes.append(route)
     final = u.HSRoomRoute()
     final.set_editor_property('stage', 3)
@@ -323,7 +322,7 @@ for name in ['Basic_roomA', 'Basic_roomB', 'Basic_roomC', 'Basic_roomABC_unchang
         changed_table.static_mesh_component.set_mobility(u.ComponentMobility.MOVABLE)
         variation.set_editor_property('furniture',changed_table)
         intro=seat_item('Introduction_A',2,2,table,'Jam_Introduction_A')
-        intro.set_editor_property('clue_id',u.Name('None'))
+        intro.set_editor_property('clue_id',u.Name('Clue_A'))
         for old in list(actors.get_all_level_actors()):
             if old.get_actor_label() in ('Drawing','Drawing002'):
                 painting = old if isinstance(old,u.HSVisitPainting) else copy_mesh(old,spawn(u.HSVisitPainting,(0,0,0),old.get_actor_label()))
